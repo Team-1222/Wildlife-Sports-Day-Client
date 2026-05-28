@@ -1,1 +1,1 @@
-# Wildlife-Sports-Day-Client
+# 야생동물스포츠하는날 클라이언트 레포지터리 입니다.
