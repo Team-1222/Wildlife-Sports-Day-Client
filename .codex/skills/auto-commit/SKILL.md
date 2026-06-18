@@ -36,6 +36,7 @@ description: 현재 변경사항을 기능 단위로 자동 분할하여 커밋�
 | 스크립터블 오브젝트 | `SO` |
 | 미니게임 관련 | `Minigame` |
 | 저장/기록 시스템 | `Save` |
+| 문서 작업 | `Docs` |
 | 게임 매니저 | `Manager` |
 | 애니메이션 컨트롤러·클립 | `Anim` |
 | 셰이더·머티리얼 | `Shader` |
@@ -109,12 +110,14 @@ git status
 | `perf` | 성능 개선 |
  
 **scope:** Unity 도메인 기준 (위 표 참고). type·scope는 반드시 **영어**로 작성  
+**scope 제한:** 위 표에 없는 scope는 임의로 만들지 않는다. 맞는 scope가 없으면 커밋을 중단하고 사용자에게 어떤 scope를 쓸지 확인한다.
 **subject:** 50자 이내, 반드시 **한글**로 작성
  
 **작성 예시:**
 ```
 feat(Minigame): 악어 물기 미니게임 추가
 fix(UI): HUD 타이머 표시 오류 수정
+docs(Docs): GitHub 하네스 규칙 정리
 chore(Build): ProjectSettings 빌드 타겟 변경
 refactor(Manager): 게임 매니저 싱글톤 구조 개선
 ```
