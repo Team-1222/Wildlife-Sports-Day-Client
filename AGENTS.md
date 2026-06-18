@@ -18,29 +18,27 @@
 ## 문서 우선순위
 
 1. 현재 대화의 직접 지시
-2. `.codex/WORK_ORDER.md` (로컬 전용, 없을 수 있음)
-3. `.codex/AGENTS.md`
-4. `.codex/Docs/Conventions/AI_DEVELOPMENT_RULES.md`
-5. `.codex/Docs/Conventions/CODING_CONVENTIONS.md`
-6. `.codex/Docs/Conventions/GITHUB_HARNESS.md`
-7. `.codex/Docs/Planning/PROJECT_PLAN.md`
-8. `.codex/Docs/Planning/VISUAL_HARNESS.md`
-9. `.codex/Docs/TODO.md` (로컬 전용, 없을 수 있음)
-10. `.codex/Docs/DECISIONS.md` (로컬 전용, 없을 수 있음)
+2. `AGENTS.md`
+3. `.codex/docs/conventions/AI_DEVELOPMENT_RULES.md`
+4. `.codex/docs/conventions/CODING_CONVENTIONS.md`
+5. `.codex/docs/conventions/GITHUB_HARNESS.md`
+6. `.codex/docs/planning/PROJECT_PLAN.md`
+7. `.codex/docs/planning/VISUAL_HARNESS.md`
+8. `.codex/skills/*/SKILL.md` (해당 작업 요청 시)
 
 충돌 시 더 높은 우선순위를 따른다.
 
 ## 문서 맵
 
-- `.codex/WORK_ORDER.md`: 반복 작업 요청 템플릿, 로컬 전용
-- `.codex/AGENTS.md`: AI 작업자가 먼저 읽는 진입 문서
-- `.codex/Docs/Conventions/AI_DEVELOPMENT_RULES.md`: AI 구현/검증/기록 규칙
-- `.codex/Docs/Conventions/CODING_CONVENTIONS.md`: Unity/C# 코드 스타일
-- `.codex/Docs/Conventions/GITHUB_HARNESS.md`: 1인 개발 기준 Git 운영 규칙
-- `.codex/Docs/Planning/PROJECT_PLAN.md`: 현재 상태 기록 중심 작업 문서
-- `.codex/Docs/Planning/VISUAL_HARNESS.md`: 시각/UI/UX 검수 기준
-- `.codex/Docs/TODO.md`: 작업 후보와 우선순위, 로컬 전용
-- `.codex/Docs/DECISIONS.md`: 확정된 결정 기록, 로컬 전용
+- `AGENTS.md`: AI 작업자가 먼저 읽는 진입 문서
+- `.codex/docs/conventions/AI_DEVELOPMENT_RULES.md`: AI 구현/검증/기록 규칙
+- `.codex/docs/conventions/CODING_CONVENTIONS.md`: Unity/C# 코드 스타일
+- `.codex/docs/conventions/GITHUB_HARNESS.md`: 1인 개발 기준 Git 운영 규칙
+- `.codex/docs/planning/PROJECT_PLAN.md`: 현재 상태 기록 중심 작업 문서
+- `.codex/docs/planning/VISUAL_HARNESS.md`: 시각/UI/UX 검수 기준
+- `.codex/skills/auto-commit/SKILL.md`: 자동 커밋 절차
+- `.codex/skills/auto-pr/SKILL.md`: PR 생성 절차
+- `.codex/skills/github-issue/SKILL.md`: GitHub 이슈 생성 절차
 
 ## 현재 확인된 프로젝트 구조
 
@@ -80,17 +78,14 @@
 
 - 사용자가 이미 작성한 규칙은 삭제하지 말고 필요한 내용만 추가/정리한다.
 - `PROJECT_PLAN.md`는 완성형 설계 문서가 아니라 현재 상태 기록 중심 문서로 취급한다.
-- TODO는 `.codex/Docs/TODO.md` 한 곳에서 관리한다. 단, 이 파일은 로컬 전용이라 저장소에 없을 수 있다.
-- `.codex/WORK_ORDER.md`, `.codex/Docs/TODO.md`, `.codex/Docs/DECISIONS.md`는 `.gitignore` 대상이다.
 - 단정된 기획 내용은 `PROJECT_PLAN.md`에 실제 확정 항목으로 적힌 내용만 사용한다.
 - `PROJECT_PLAN.md`의 아이디어 메모는 확정 정보로 취급하지 않는다.
-- `PROJECT_PLAN.md`가 사용자 기획으로 갱신된 뒤 다음 문서를 다시 보강한다.
-  - `.codex/AGENTS.md`
-  - `.codex/Docs/Conventions/AI_DEVELOPMENT_RULES.md`
-  - `.codex/Docs/Planning/VISUAL_HARNESS.md`
-  - `.codex/Docs/TODO.md`
-  - `.codex/Docs/DECISIONS.md`
+- `PROJECT_PLAN.md`가 사용자 기획으로 갱신된 뒤 필요한 가이드 문서를 다시 보강한다.
+  - `AGENTS.md`
+  - `.codex/docs/conventions/AI_DEVELOPMENT_RULES.md`
+  - `.codex/docs/planning/VISUAL_HARNESS.md`
 - 문서는 장문 설명보다 실무형 규칙과 체크리스트를 우선한다.
+- 커밋, PR, 이슈 관련 규칙이 충돌하면 `.codex/skills` 문서를 우선한다.
 
 ## 작업 완료 전 체크
 

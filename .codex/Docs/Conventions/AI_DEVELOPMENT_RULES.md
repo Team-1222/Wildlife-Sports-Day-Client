@@ -3,11 +3,10 @@
 ## 작업 우선순위
 
 1. 현재 대화의 직접 프롬프트
-2. `.codex/WORK_ORDER.md`
-3. `.codex/AGENTS.md`
-4. `.codex/Docs/Conventions/*`
-5. `.codex/Docs/Planning/*`
-6. 기존 프로젝트 구조
+2. `AGENTS.md`
+3. `.codex/docs/conventions/*`
+4. `.codex/docs/planning/*`
+5. 기존 프로젝트 구조
 
 ## 기본 원칙
 
@@ -63,8 +62,8 @@
   - 핵심 변경 내용
   - 검증 내용
   - 미검증 항목과 이유
-- 확정된 의사결정만 `.codex/Docs/DECISIONS.md`에 기록한다.
-- 미확정 기획이나 추측은 결정 기록에 넣지 않는다.
+- 문서에 기록할 내용은 재사용 가능한 가이드, 컨벤션, 확정 기획으로 제한한다.
+- 임시 작업 메모, 개인 TODO, 일회성 결정 기록은 `.codex` 문서로 만들지 않는다.
 
 ## 금지사항
 
