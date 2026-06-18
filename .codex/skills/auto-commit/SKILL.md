@@ -148,8 +148,8 @@ Closes #123
   - Assets/Scripts/MiniGames/CrocodileBite.cs
   - Assets/Prefabs/MiniGames/CrocodileBite.prefab
  
-[2/N] chore(config): ESLint 규칙 업데이트
-  - .eslintrc.js
+[2/N] chore(Build): Unity 빌드 설정 갱신
+  - ProjectSettings/ProjectSettings.asset
  
 진행할까요?
 ```
@@ -182,7 +182,7 @@ git commit -m "<type>(<scope>): <subject>" -m "Closes #N"
 ✅ 커밋 완료 (N개)
  
 abc1234  feat(Minigame): 악어 물기 미니게임 추가
-def5678  chore(config): ESLint 규칙 업데이트
+def5678  chore(Build): Unity 빌드 설정 갱신
  
 push할까요?
 ```
