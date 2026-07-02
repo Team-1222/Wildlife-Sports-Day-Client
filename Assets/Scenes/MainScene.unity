@@ -152,7 +152,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1374237206}
+  - {fileID: 1723456802}
   m_Father: {fileID: 1665959047}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
@@ -208,20 +208,32 @@ MonoBehaviour:
   _pointerEnterSound: {fileID: 0}
   _pointerDownSound: {fileID: 0}
   _clickSound: {fileID: 0}
-  _useInteractionAnimations: 1
-  _pointerEnterAnimation: {fileID: 0}
-  _pointerExitAnimation: {fileID: 0}
-  _pointerDownAnimation: {fileID: 0}
-  _pointerUpAnimation: {fileID: 0}
-  _clickAnimation: {fileID: 0}
-  _disabledAnimation: {fileID: 0}
-  _screenAction: 0
+  _useInteractionMotion: 1
+  _motionTarget: {fileID: 1723456802}
+  _useUnscaledMotionTime: 1
+  _interactionMotion:
+    _duration: 0.12
+    _ease: 6
+    _hoverScale: 1.05
+    _pressedScale: 0.96
+    _disabledAlpha: 0.45
+    _hoverOffset: {x: 0, y: 0}
+    _pressedOffset: {x: 0, y: -2}
+    _useClickPunch: 1
+    _clickPunchScale: {x: 0.08, y: 0.08, z: 0}
+    _clickPunchDuration: 0.18
+  _clickAction: 0
   _currentScreen: {fileID: 0}
   _targetScreen: {fileID: 0}
   _transitionMode: 0
   _useTransitionAnimation: 1
-  _blockClickDuringTransition: 1
-  _transitionCompleted:
+  _blockClickDuringAction: 1
+  _sceneName: 
+  _loadSceneMode: 0
+  _targetGameObject: {fileID: 0}
+  _setActiveValue: 1
+  _url: 
+  _actionCompleted:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &14937780
@@ -253,7 +265,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.4392157, g: 0.46666667, b: 0.4745098, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -661,7 +673,7 @@ MonoBehaviour:
   _startOpened: 1
   _playOpenAnimationOnStart: 1
   _deactivateOnClosed: 1
-  _blockInputDuringTransition: 1
+  _blockInputDuringTransition: 0
   _collectChildAnimationsOnAwake: 1
   _collectChildScreensOnAwake: 1
   _openPlayMode: 0
@@ -852,7 +864,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _duration: 0.5
   _delay: 0
-  _ease: 18
+  _ease: 30
   _useUnscaledTime: 1
   _useSameSettingsForShowAndHide: 1
   _showSettings:
@@ -1178,7 +1190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _duration: 0.5
   _delay: 0
-  _ease: 18
+  _ease: 30
   _useUnscaledTime: 1
   _useSameSettingsForShowAndHide: 1
   _showSettings:
@@ -1574,7 +1586,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1449723833}
+  - {fileID: 1723456822}
   m_Father: {fileID: 1665959047}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
@@ -1630,20 +1642,32 @@ MonoBehaviour:
   _pointerEnterSound: {fileID: 0}
   _pointerDownSound: {fileID: 0}
   _clickSound: {fileID: 0}
-  _useInteractionAnimations: 1
-  _pointerEnterAnimation: {fileID: 0}
-  _pointerExitAnimation: {fileID: 0}
-  _pointerDownAnimation: {fileID: 0}
-  _pointerUpAnimation: {fileID: 0}
-  _clickAnimation: {fileID: 0}
-  _disabledAnimation: {fileID: 0}
-  _screenAction: 0
+  _useInteractionMotion: 1
+  _motionTarget: {fileID: 1723456822}
+  _useUnscaledMotionTime: 1
+  _interactionMotion:
+    _duration: 0.12
+    _ease: 6
+    _hoverScale: 1.05
+    _pressedScale: 0.96
+    _disabledAlpha: 0.45
+    _hoverOffset: {x: 0, y: 0}
+    _pressedOffset: {x: 0, y: -2}
+    _useClickPunch: 1
+    _clickPunchScale: {x: 0.08, y: 0.08, z: 0}
+    _clickPunchDuration: 0.18
+  _clickAction: 0
   _currentScreen: {fileID: 0}
   _targetScreen: {fileID: 0}
   _transitionMode: 0
   _useTransitionAnimation: 1
-  _blockClickDuringTransition: 1
-  _transitionCompleted:
+  _blockClickDuringAction: 1
+  _sceneName: 
+  _loadSceneMode: 0
+  _targetGameObject: {fileID: 0}
+  _setActiveValue: 1
+  _url: 
+  _actionCompleted:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &1231089061
@@ -1675,7 +1699,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.13725491, g: 0.40392157, b: 0.80784315, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1866,7 +1890,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1432165645}
+  - {fileID: 1723456812}
   m_Father: {fileID: 1665959047}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
@@ -1922,20 +1946,32 @@ MonoBehaviour:
   _pointerEnterSound: {fileID: 0}
   _pointerDownSound: {fileID: 0}
   _clickSound: {fileID: 0}
-  _useInteractionAnimations: 1
-  _pointerEnterAnimation: {fileID: 0}
-  _pointerExitAnimation: {fileID: 0}
-  _pointerDownAnimation: {fileID: 0}
-  _pointerUpAnimation: {fileID: 0}
-  _clickAnimation: {fileID: 0}
-  _disabledAnimation: {fileID: 0}
-  _screenAction: 0
+  _useInteractionMotion: 1
+  _motionTarget: {fileID: 1723456812}
+  _useUnscaledMotionTime: 1
+  _interactionMotion:
+    _duration: 0.12
+    _ease: 6
+    _hoverScale: 1.05
+    _pressedScale: 0.96
+    _disabledAlpha: 0.45
+    _hoverOffset: {x: 0, y: 0}
+    _pressedOffset: {x: 0, y: -2}
+    _useClickPunch: 1
+    _clickPunchScale: {x: 0.08, y: 0.08, z: 0}
+    _clickPunchDuration: 0.18
+  _clickAction: 0
   _currentScreen: {fileID: 0}
   _targetScreen: {fileID: 0}
   _transitionMode: 0
   _useTransitionAnimation: 1
-  _blockClickDuringTransition: 1
-  _transitionCompleted:
+  _blockClickDuringAction: 1
+  _sceneName: 
+  _loadSceneMode: 0
+  _targetGameObject: {fileID: 0}
+  _setActiveValue: 1
+  _url: 
+  _actionCompleted:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &1317596649
@@ -1967,7 +2003,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.9372549, g: 0.68235296, b: 0.07058824, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2169,7 +2205,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 14937778}
+  m_Father: {fileID: 1723456802}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -2382,7 +2418,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1317596647}
+  m_Father: {fileID: 1723456812}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -2656,7 +2692,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1231089059}
+  m_Father: {fileID: 1723456822}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -2774,6 +2810,7 @@ GameObject:
   - component: {fileID: 1665959047}
   - component: {fileID: 1665959049}
   - component: {fileID: 1665959048}
+  - component: {fileID: 1665959050}
   m_Layer: 5
   m_Name: Panel_Buttons
   m_TagString: Untagged
@@ -2802,7 +2839,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -115, y: -145}
-  m_SizeDelta: {x: 580, y: 690}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &1665959048
 MonoBehaviour:
@@ -2826,7 +2863,7 @@ MonoBehaviour:
   _closePlayMode: 0
   _reverseCloseOrder: 1
   _waitForPreviousTarget: 0
-  _animationInterval: 0.5
+  _animationInterval: 0.25
   _animationTargets:
   - _type: 0
     _animation: {fileID: 2105935951}
@@ -2865,6 +2902,164 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1665959050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1665959046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 2
+  m_VerticalFit: 2
+--- !u!1 &1723456789
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1723456790}
+  m_Layer: 5
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1723456790
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723456789}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1952984320}
+  m_Father: {fileID: 2105935946}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1723456801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1723456802}
+  m_Layer: 5
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1723456802
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723456801}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1374237206}
+  m_Father: {fileID: 14937778}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1723456811
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1723456812}
+  m_Layer: 5
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1723456812
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723456811}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1432165645}
+  m_Father: {fileID: 1317596647}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1723456821
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1723456822}
+  m_Layer: 5
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1723456822
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723456821}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1449723833}
+  m_Father: {fileID: 1231089059}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1952984319
 GameObject:
   m_ObjectHideFlags: 0
@@ -2895,7 +3090,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2105935946}
+  m_Father: {fileID: 1723456790}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -3137,7 +3332,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1952984320}
+  - {fileID: 1723456790}
   m_Father: {fileID: 1665959047}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
@@ -3193,20 +3388,32 @@ MonoBehaviour:
   _pointerEnterSound: {fileID: 0}
   _pointerDownSound: {fileID: 0}
   _clickSound: {fileID: 0}
-  _useInteractionAnimations: 1
-  _pointerEnterAnimation: {fileID: 0}
-  _pointerExitAnimation: {fileID: 0}
-  _pointerDownAnimation: {fileID: 0}
-  _pointerUpAnimation: {fileID: 0}
-  _clickAnimation: {fileID: 0}
-  _disabledAnimation: {fileID: 0}
-  _screenAction: 0
+  _useInteractionMotion: 1
+  _motionTarget: {fileID: 1723456790}
+  _useUnscaledMotionTime: 1
+  _interactionMotion:
+    _duration: 0.12
+    _ease: 6
+    _hoverScale: 1.05
+    _pressedScale: 0.96
+    _disabledAlpha: 0.45
+    _hoverOffset: {x: 0, y: 0}
+    _pressedOffset: {x: 0, y: -2}
+    _useClickPunch: 1
+    _clickPunchScale: {x: 0.08, y: 0.08, z: 0}
+    _clickPunchDuration: 0.18
+  _clickAction: 0
   _currentScreen: {fileID: 0}
   _targetScreen: {fileID: 0}
   _transitionMode: 0
   _useTransitionAnimation: 1
-  _blockClickDuringTransition: 1
-  _transitionCompleted:
+  _blockClickDuringAction: 1
+  _sceneName: 
+  _loadSceneMode: 0
+  _targetGameObject: {fileID: 0}
+  _setActiveValue: 1
+  _url: 
+  _actionCompleted:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &2105935948
@@ -3238,7 +3445,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.83137256, g: 0.2627451, b: 0.18431373, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
