@@ -276,7 +276,8 @@ public sealed class UiScreen : MonoBehaviour
             }
         }
 
-        sequence.AppendInterval(GetSequenceDuration(orderedTargets, isOpen));
+        float remainingDuration = Mathf.Max(0f, GetSequenceDuration(orderedTargets, isOpen) - sequence.Duration());
+        sequence.AppendInterval(remainingDuration);
         return sequence;
     }
 
