@@ -12,15 +12,36 @@ public sealed class UiAnimationEditor : Editor
     {
         serializedObject.Update();
 
-        Layout.Note(
-            "UI 요소 하나의 Fade, Scale, Move 등장/퇴장 애니메이션을 관리합니다.\n" +
-            "실행 타이밍과 순서는 UiScreen에서 제어하는 것을 권장합니다.");
+        float previousLabelWidth = EditorGUIUtility.labelWidth;
+        EditorGUIUtility.labelWidth = Mathf.Max(previousLabelWidth, 190f);
 
-        DrawAnimationSettings("등장 애니메이션", "_showSettings", "_showCompleted", true);
-        DrawAnimationSettings("퇴장 애니메이션", "_hideSettings", "_hideCompleted", false);
-        DrawExecutionSettings();
-        DrawStateSettings();
-        DrawRuntimeButtons();
+        try
+        {
+            Layout.Note(
+                "UI 요소 하나의 Fade, Scale, Move 등장/퇴장 애니메이션을 관리합니다.\n" +
+                "실행 타이밍과 순서는 UiScreen에서 제어하는 것을 권장합니다.");
+
+            SerializedProperty useSameSettings = serializedObject.FindProperty("_useSameSettingsForShowAndHide");
+            DrawAnimationModeSettings(useSameSettings);
+
+            if (useSameSettings.boolValue)
+            {
+                DrawAnimationSettings("등장/퇴장 공통 애니메이션", "_showSettings", null, true);
+                DrawCompletionEvents();
+            }
+            else
+            {
+                DrawAnimationSettings("등장 애니메이션", "_showSettings", "_showCompleted", true);
+                DrawAnimationSettings("퇴장 애니메이션", "_hideSettings", "_hideCompleted", false);
+            }
+
+            DrawExecutionSettings();
+            DrawRuntimeButtons();
+        }
+        finally
+        {
+            EditorGUIUtility.labelWidth = previousLabelWidth;
+        }
 
         serializedObject.ApplyModifiedProperties();
     }
@@ -37,12 +58,26 @@ public sealed class UiAnimationEditor : Editor
         });
     }
 
-    private void DrawStateSettings()
+    private void DrawAnimationModeSettings(SerializedProperty useSameSettings)
     {
-        Layout.Section("상태 저장", () =>
+        Layout.Section("애니메이션 설정 방식", () =>
         {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("_saveInitialStateOnAwake"), new GUIContent("Awake 때 기본 상태 저장", "초기 위치, 크기, 알파값을 복구 기준으로 저장합니다."));
-            Layout.Note("저장된 기본 상태는 UiScreen이 Open 전에 Show 시작 상태를 적용하거나, 테스트에서 기본 상태 복구를 누를 때 기준으로 사용됩니다.");
+            EditorGUILayout.PropertyField(useSameSettings, new GUIContent("등장/퇴장 설정 같이 사용", "켜면 등장 설정 하나만 입력하고 퇴장은 같은 설정을 반대로 재생합니다."));
+            EditorGUILayout.Space(3f);
+
+            if (useSameSettings.boolValue)
+            {
+                Layout.Note("퇴장은 같은 Fade/Scale/Move 값을 반대로 재생합니다. 예: Right 80 등장은 오른쪽에서 들어오고, 퇴장은 오른쪽으로 나갑니다.");
+            }
+        });
+    }
+
+    private void DrawCompletionEvents()
+    {
+        Layout.Section("완료 이벤트", () =>
+        {
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_showCompleted"), new GUIContent("등장 완료 이벤트"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_hideCompleted"), new GUIContent("퇴장 완료 이벤트"));
         });
     }
 
@@ -61,7 +96,10 @@ public sealed class UiAnimationEditor : Editor
             DrawScaleSettings(settings);
             DrawMoveSettings(settings);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(eventPath), new GUIContent("완료 이벤트", "애니메이션 완료 후 호출됩니다."));
+            if (!string.IsNullOrEmpty(eventPath))
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty(eventPath), new GUIContent("완료 이벤트", "애니메이션 완료 후 호출됩니다."));
+            }
         });
     }
 
@@ -111,12 +149,39 @@ public sealed class UiAnimationEditor : Editor
             }
 
             EditorGUILayout.PropertyField(settings.FindPropertyRelative("_moveFromSavedState"), new GUIContent("저장된 기본 위치 기준"));
-            EditorGUILayout.PropertyField(settings.FindPropertyRelative("_movePreset"), new GUIContent("이동 방향 프리셋"));
-            EditorGUILayout.PropertyField(settings.FindPropertyRelative("_fromPosition"), new GUIContent("시작 위치"));
-            EditorGUILayout.PropertyField(settings.FindPropertyRelative("_toPosition"), new GUIContent("종료 위치"));
-            EditorGUILayout.PropertyField(settings.FindPropertyRelative("_offset"), new GUIContent("프리셋 Offset"));
+            SerializedProperty movePreset = settings.FindPropertyRelative("_movePreset");
+            EditorGUILayout.PropertyField(movePreset, new GUIContent("이동 방향 프리셋"));
+
+            UiAnimation.MovePreset preset = (UiAnimation.MovePreset)movePreset.intValue;
+            if (preset == UiAnimation.MovePreset.Custom)
+            {
+                EditorGUILayout.PropertyField(settings.FindPropertyRelative("_fromPosition"), new GUIContent("시작 위치"));
+                EditorGUILayout.PropertyField(settings.FindPropertyRelative("_toPosition"), new GUIContent("종료 위치"));
+            }
+            else
+            {
+                DrawMoveDistance(settings.FindPropertyRelative("_offset"), preset);
+            }
+
             Layout.Warning("Raycast 대상에 Move를 적용하면 Pointer Enter/Exit가 반복될 수 있습니다. 실제 이동은 Visual 자식에 적용하는 것이 안전합니다.");
         });
+    }
+
+    private static void DrawMoveDistance(SerializedProperty offset, UiAnimation.MovePreset preset)
+    {
+        Vector2 value = offset.vector2Value;
+        bool useHorizontalDistance = preset == UiAnimation.MovePreset.Left || preset == UiAnimation.MovePreset.Right;
+        float distance = useHorizontalDistance ? Mathf.Abs(value.x) : Mathf.Abs(value.y);
+
+        EditorGUI.BeginChangeCheck();
+        distance = EditorGUILayout.FloatField(new GUIContent("이동 거리", "선택한 방향으로 이동할 거리입니다."), distance);
+        if (EditorGUI.EndChangeCheck())
+        {
+            distance = Mathf.Max(0f, distance);
+            offset.vector2Value = useHorizontalDistance
+                ? new Vector2(distance, 0f)
+                : new Vector2(0f, distance);
+        }
     }
 
     private void DrawRuntimeButtons()
@@ -155,6 +220,7 @@ public sealed class UiAnimationEditor : Editor
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("현재 선택", GUILayout.Width(72f));
+            GUILayout.Space(8f);
             EditorGUILayout.SelectableLabel(ObjectNames.NicifyVariableName(selectedEase.ToString()), EditorStyles.helpBox, GUILayout.Height(20f));
             EditorGUILayout.EndHorizontal();
 
@@ -168,10 +234,14 @@ public sealed class UiAnimationEditor : Editor
             DrawEasePresetRow(ease, Ease.OutElastic);
 
             EditorGUILayout.Space(4f);
-            _showAdvancedEase = EditorGUILayout.Foldout(_showAdvancedEase, "고급: DOTween Ease 전체 목록", true);
+            Rect foldoutRect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
+            foldoutRect.x += 8f;
+            foldoutRect.width -= 8f;
+            _showAdvancedEase = EditorGUI.Foldout(foldoutRect, _showAdvancedEase, "고급: DOTween Ease 전체 목록", true);
             if (_showAdvancedEase)
             {
-                EditorGUILayout.PropertyField(ease, new GUIContent("전체 Ease"));
+                EditorGUILayout.LabelField("전체 Ease", EditorStyles.miniBoldLabel);
+                EditorGUILayout.PropertyField(ease, GUIContent.none);
             }
         });
     }
@@ -253,6 +323,8 @@ public sealed class UiAnimationEditor : Editor
 
     private static class Layout
     {
+        private const string SectionFoldoutPrefix = "WildlifeSportsDay.UiAnimationEditor.Section.";
+
         private static readonly GUIStyle SectionStyle = new GUIStyle(EditorStyles.helpBox)
         {
             padding = new RectOffset(10, 10, 8, 10),
@@ -268,10 +340,27 @@ public sealed class UiAnimationEditor : Editor
         public static void Section(string title, System.Action drawContent)
         {
             EditorGUILayout.BeginVertical(SectionStyle);
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
-            EditorGUILayout.Space(2f);
-            drawContent?.Invoke();
+            bool isExpanded = DrawSectionFoldout(title);
+            if (isExpanded)
+            {
+                EditorGUILayout.Space(2f);
+                drawContent?.Invoke();
+            }
+
             EditorGUILayout.EndVertical();
+        }
+
+        private static bool DrawSectionFoldout(string title)
+        {
+            string key = $"{SectionFoldoutPrefix}{title}";
+            bool isExpanded = EditorPrefs.GetBool(key, true);
+
+            Rect rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
+            rect.x += 8f;
+            rect.width -= 8f;
+            isExpanded = EditorGUI.Foldout(rect, isExpanded, title, true, EditorStyles.foldout);
+            EditorPrefs.SetBool(key, isExpanded);
+            return isExpanded;
         }
 
         public static void Subsection(string title, System.Action drawContent)

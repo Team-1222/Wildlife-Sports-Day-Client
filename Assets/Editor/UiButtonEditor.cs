@@ -52,16 +52,26 @@ public sealed class UiButtonEditor : ButtonEditor
     {
         serializedObject.Update();
 
-        Layout.Note(
-            "Unity Button을 확장한 공통 UI 버튼입니다.\n" +
-            "포인터 이벤트 애니메이션, 사운드, 직접 참조한 UiScreen 화면 동작을 Inspector에서 설정합니다.");
+        float previousLabelWidth = EditorGUIUtility.labelWidth;
+        EditorGUIUtility.labelWidth = Mathf.Max(previousLabelWidth, 190f);
 
-        base.OnInspectorGUI();
+        try
+        {
+            Layout.Note(
+                "Unity Button을 확장한 공통 UI 버튼입니다.\n" +
+                "포인터 이벤트 애니메이션, 사운드, 직접 참조한 UiScreen 화면 동작을 Inspector에서 설정합니다.");
 
-        DrawSoundSettings();
-        DrawInteractionAnimationSettings();
-        DrawScreenActionSettings();
-        DrawEvents();
+            base.OnInspectorGUI();
+
+            DrawSoundSettings();
+            DrawInteractionAnimationSettings();
+            DrawScreenActionSettings();
+            DrawEvents();
+        }
+        finally
+        {
+            EditorGUIUtility.labelWidth = previousLabelWidth;
+        }
 
         serializedObject.ApplyModifiedProperties();
     }
@@ -150,6 +160,8 @@ public sealed class UiButtonEditor : ButtonEditor
 
     private static class Layout
     {
+        private const string SectionFoldoutPrefix = "WildlifeSportsDay.UiButtonEditor.Section.";
+
         private static readonly GUIStyle SectionStyle = new GUIStyle(EditorStyles.helpBox)
         {
             padding = new RectOffset(10, 10, 8, 10),
@@ -165,10 +177,27 @@ public sealed class UiButtonEditor : ButtonEditor
         public static void Section(string title, System.Action drawContent)
         {
             EditorGUILayout.BeginVertical(SectionStyle);
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
-            EditorGUILayout.Space(2f);
-            drawContent?.Invoke();
+            bool isExpanded = DrawSectionFoldout(title);
+            if (isExpanded)
+            {
+                EditorGUILayout.Space(2f);
+                drawContent?.Invoke();
+            }
+
             EditorGUILayout.EndVertical();
+        }
+
+        private static bool DrawSectionFoldout(string title)
+        {
+            string key = $"{SectionFoldoutPrefix}{title}";
+            bool isExpanded = EditorPrefs.GetBool(key, true);
+
+            Rect rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
+            rect.x += 8f;
+            rect.width -= 8f;
+            isExpanded = EditorGUI.Foldout(rect, isExpanded, title, true, EditorStyles.foldout);
+            EditorPrefs.SetBool(key, isExpanded);
+            return isExpanded;
         }
 
         public static void Subsection(string title, System.Action drawContent)

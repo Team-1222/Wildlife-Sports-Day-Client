@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -28,17 +29,59 @@ public sealed class UiScreen : MonoBehaviour
         Instant,
     }
 
+    public enum AnimationTargetType
+    {
+        Animation,
+        Screen,
+    }
+
+    [Serializable]
+    private sealed class AnimationTarget
+    {
+        [SerializeField] private AnimationTargetType _type;
+        [SerializeField] private UiAnimation _animation;
+        [SerializeField] private UiScreen _screen;
+
+        public AnimationTargetType Type => _type;
+        public UiAnimation Animation => _animation;
+        public UiScreen Screen => _screen;
+
+        private AnimationTarget()
+        {
+        }
+
+        public AnimationTarget(UiAnimation animation)
+        {
+            _type = AnimationTargetType.Animation;
+            _animation = animation;
+        }
+
+        public AnimationTarget(UiScreen screen)
+        {
+            _type = AnimationTargetType.Screen;
+            _screen = screen;
+        }
+    }
+
     [SerializeField] private bool _startOpened;
     [SerializeField] private bool _playOpenAnimationOnStart;
     [SerializeField] private bool _deactivateOnClosed = true;
     [SerializeField] private bool _blockInputDuringTransition = true;
     [SerializeField] private bool _collectChildAnimationsOnAwake = true;
+    [SerializeField] private bool _collectChildScreensOnAwake = true;
 
-    [SerializeField] private AnimationPlayMode _openPlayMode = AnimationPlayMode.Simultaneous;
-    [SerializeField] private AnimationPlayMode _closePlayMode = AnimationPlayMode.Simultaneous;
+#pragma warning disable CS0414
+    [SerializeField, HideInInspector] private AnimationPlayMode _openPlayMode = AnimationPlayMode.Simultaneous;
+    [SerializeField, HideInInspector] private AnimationPlayMode _closePlayMode = AnimationPlayMode.Simultaneous;
+#pragma warning restore CS0414
     [SerializeField] private bool _reverseCloseOrder = true;
+    [SerializeField] private bool _waitForPreviousTarget;
     [SerializeField, Min(0f)] private float _animationInterval = 0.05f;
+    [SerializeField] private List<AnimationTarget> _animationTargets = new();
     [SerializeField] private List<UiAnimation> _animations = new();
+
+    [SerializeField] private bool _syncChildAnimationsFromSource;
+    [SerializeField] private UiAnimation _animationSyncSource;
 
     [SerializeField] private UnityEvent _opened;
     [SerializeField] private UnityEvent _closed;
@@ -55,7 +98,7 @@ public sealed class UiScreen : MonoBehaviour
     {
         _canvasGroup = GetComponent<CanvasGroup>();
 
-        if (_collectChildAnimationsOnAwake)
+        if (_collectChildAnimationsOnAwake || _collectChildScreensOnAwake)
         {
             CollectChildAnimations();
         }
@@ -79,8 +122,40 @@ public sealed class UiScreen : MonoBehaviour
     public void CollectChildAnimations()
     {
         _animations.Clear();
-        GetComponentsInChildren(true, _animations);
-        _animations.RemoveAll(animation => animation == null || animation.gameObject == gameObject);
+        _animationTargets.Clear();
+
+        CollectTargetsInHierarchy(transform);
+    }
+
+    public List<UiAnimation> GetChildAnimations()
+    {
+        List<UiAnimation> animations = new();
+        GetComponentsInChildren(true, animations);
+        animations.RemoveAll(animation => animation == null || animation.gameObject == gameObject);
+        return animations;
+    }
+
+    public List<UiAnimation> GetChildAnimationsExcept(UiAnimation excludedAnimation)
+    {
+        List<UiAnimation> animations = GetChildAnimations();
+        animations.RemoveAll(animation => animation == excludedAnimation);
+        return animations;
+    }
+
+    public int ApplyAnimationSyncSourceToChildAnimations()
+    {
+        if (_animationSyncSource == null)
+        {
+            return 0;
+        }
+
+        List<UiAnimation> animations = GetChildAnimationsExcept(_animationSyncSource);
+        for (int i = 0; i < animations.Count; i++)
+        {
+            animations[i].CopySettingsFrom(_animationSyncSource);
+        }
+
+        return animations.Count;
     }
 
     public Tween Open(bool useAnimation = true)
@@ -106,7 +181,7 @@ public sealed class UiScreen : MonoBehaviour
         }
 
         ApplyShowStartStates();
-        _sequence = BuildSequence(_openPlayMode, false, true)
+        _sequence = BuildSequence(false, true)
             .OnComplete(CompleteOpen);
 
         return _sequence;
@@ -129,7 +204,7 @@ public sealed class UiScreen : MonoBehaviour
             return null;
         }
 
-        _sequence = BuildSequence(_closePlayMode, _reverseCloseOrder, false)
+        _sequence = BuildSequence(_reverseCloseOrder, false)
             .OnComplete(CompleteClose);
 
         return _sequence;
@@ -166,44 +241,72 @@ public sealed class UiScreen : MonoBehaviour
         }
     }
 
-    private Sequence BuildSequence(AnimationPlayMode playMode, bool reverseOrder, bool isOpen)
+    private Sequence BuildSequence(bool reverseOrder, bool isOpen)
     {
-        List<UiAnimation> orderedAnimations = GetOrderedAnimations(playMode, reverseOrder);
+        List<AnimationTarget> orderedTargets = GetOrderedTargets(reverseOrder);
         Sequence sequence = DOTween.Sequence().SetLink(gameObject, LinkBehaviour.KillOnDestroy);
 
-        if (orderedAnimations.Count == 0)
+        if (orderedTargets.Count == 0)
         {
             sequence.AppendInterval(0f);
             return sequence;
         }
 
-        if (playMode == AnimationPlayMode.Simultaneous)
+        if (_waitForPreviousTarget)
         {
-            foreach (UiAnimation animation in orderedAnimations)
+            float startTime = 0f;
+            for (int i = 0; i < orderedTargets.Count; i++)
             {
-                sequence.AppendCallback(() => PlayAnimation(animation, isOpen));
-            }
+                AnimationTarget target = orderedTargets[i];
+                sequence.InsertCallback(startTime, () => PlayTarget(target, isOpen));
+                startTime += GetTargetDuration(target, isOpen);
 
-            sequence.AppendInterval(GetLongestAnimationDuration(orderedAnimations));
-            return sequence;
-        }
-
-        for (int i = 0; i < orderedAnimations.Count; i++)
-        {
-            UiAnimation animation = orderedAnimations[i];
-            sequence.AppendCallback(() => PlayAnimation(animation, isOpen));
-            sequence.AppendInterval(GetAnimationDuration(animation));
-
-            if (_animationInterval > 0f && i < orderedAnimations.Count - 1)
-            {
-                sequence.AppendInterval(_animationInterval);
+                if (i < orderedTargets.Count - 1)
+                {
+                    startTime += _animationInterval;
+                }
             }
         }
+        else
+        {
+            for (int i = 0; i < orderedTargets.Count; i++)
+            {
+                AnimationTarget target = orderedTargets[i];
+                sequence.InsertCallback(_animationInterval * i, () => PlayTarget(target, isOpen));
+            }
+        }
 
+        sequence.AppendInterval(GetSequenceDuration(orderedTargets, isOpen));
         return sequence;
     }
 
-    private List<UiAnimation> GetOrderedAnimations(AnimationPlayMode playMode, bool reverseOrder)
+    private List<AnimationTarget> GetOrderedTargets(bool reverseOrder)
+    {
+        List<AnimationTarget> orderedTargets = new();
+
+        if (_animationTargets.Count > 0)
+        {
+            orderedTargets.AddRange(_animationTargets);
+            orderedTargets.RemoveAll(target => target == null || !HasValidTarget(target));
+        }
+        else
+        {
+            List<UiAnimation> fallbackAnimations = GetOrderedAnimations(reverseOrder: false);
+            for (int i = 0; i < fallbackAnimations.Count; i++)
+            {
+                orderedTargets.Add(new AnimationTarget(fallbackAnimations[i]));
+            }
+        }
+
+        if (reverseOrder)
+        {
+            orderedTargets.Reverse();
+        }
+
+        return orderedTargets;
+    }
+
+    private List<UiAnimation> GetOrderedAnimations(bool reverseOrder)
     {
         List<UiAnimation> orderedAnimations = new(_animations);
         orderedAnimations.RemoveAll(animation => animation == null);
@@ -218,11 +321,13 @@ public sealed class UiScreen : MonoBehaviour
 
     private void ApplyShowStartStates()
     {
-        for (int i = 0; i < _animations.Count; i++)
+        List<AnimationTarget> targets = GetOrderedTargets(false);
+        for (int i = 0; i < targets.Count; i++)
         {
-            if (_animations[i] != null)
+            AnimationTarget target = targets[i];
+            if (target.Type == AnimationTargetType.Animation && target.Animation != null)
             {
-                _animations[i].ApplyShowStartState();
+                target.Animation.ApplyShowStartState();
             }
         }
     }
@@ -333,6 +438,30 @@ public sealed class UiScreen : MonoBehaviour
         }
     }
 
+    private static void PlayTarget(AnimationTarget target, bool isOpen)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        if (target.Type == AnimationTargetType.Screen)
+        {
+            if (isOpen)
+            {
+                target.Screen?.Open();
+            }
+            else
+            {
+                target.Screen?.Close();
+            }
+
+            return;
+        }
+
+        PlayAnimation(target.Animation, isOpen);
+    }
+
     private static Tween CreateTransitionWaitTween(Tween firstTween, Tween secondTween, bool useLongestDuration)
     {
         float firstDuration = GetTweenDuration(firstTween);
@@ -349,20 +478,48 @@ public sealed class UiScreen : MonoBehaviour
 
     private float GetEstimatedOpenDuration()
     {
-        List<UiAnimation> orderedAnimations = GetOrderedAnimations(_openPlayMode, false);
+        List<AnimationTarget> orderedTargets = GetOrderedTargets(false);
+        return GetSequenceDuration(orderedTargets, true);
+    }
 
-        if (_openPlayMode == AnimationPlayMode.Simultaneous)
+    private float GetEstimatedCloseDuration()
+    {
+        List<AnimationTarget> orderedTargets = GetOrderedTargets(_reverseCloseOrder);
+        return GetSequenceDuration(orderedTargets, false);
+    }
+
+    private static float GetAnimationDuration(UiAnimation animation)
+    {
+        return animation != null ? animation.Duration + animation.Delay : 0f;
+    }
+
+    private float GetSequenceDuration(IReadOnlyList<AnimationTarget> targets, bool isOpen)
+    {
+        if (_waitForPreviousTarget)
         {
-            return GetLongestAnimationDuration(orderedAnimations);
+            return GetSequentialDuration(targets, isOpen);
         }
 
         float duration = 0f;
 
-        for (int i = 0; i < orderedAnimations.Count; i++)
+        for (int i = 0; i < targets.Count; i++)
         {
-            duration += GetAnimationDuration(orderedAnimations[i]);
+            float startTime = _animationInterval * i;
+            duration = Mathf.Max(duration, startTime + GetTargetDuration(targets[i], isOpen));
+        }
 
-            if (_animationInterval > 0f && i < orderedAnimations.Count - 1)
+        return duration;
+    }
+
+    private float GetSequentialDuration(IReadOnlyList<AnimationTarget> targets, bool isOpen)
+    {
+        float duration = 0f;
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+            duration += GetTargetDuration(targets[i], isOpen);
+
+            if (i < targets.Count - 1)
             {
                 duration += _animationInterval;
             }
@@ -371,20 +528,50 @@ public sealed class UiScreen : MonoBehaviour
         return duration;
     }
 
-    private static float GetLongestAnimationDuration(IReadOnlyList<UiAnimation> animations)
+    private static float GetTargetDuration(AnimationTarget target, bool isOpen)
     {
-        float duration = 0f;
-
-        for (int i = 0; i < animations.Count; i++)
+        if (target == null)
         {
-            duration = Mathf.Max(duration, GetAnimationDuration(animations[i]));
+            return 0f;
         }
 
-        return duration;
+        if (target.Type == AnimationTargetType.Screen)
+        {
+            if (target.Screen == null)
+            {
+                return 0f;
+            }
+
+            return isOpen ? target.Screen.GetEstimatedOpenDuration() : target.Screen.GetEstimatedCloseDuration();
+        }
+
+        return GetAnimationDuration(target.Animation);
     }
 
-    private static float GetAnimationDuration(UiAnimation animation)
+    private static bool HasValidTarget(AnimationTarget target)
     {
-        return animation != null ? animation.Duration + animation.Delay : 0f;
+        return target.Type == AnimationTargetType.Screen ? target.Screen != null : target.Animation != null;
+    }
+
+    private void CollectTargetsInHierarchy(Transform root)
+    {
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (_collectChildScreensOnAwake && child.TryGetComponent(out UiScreen childScreen) && childScreen != this)
+            {
+                _animationTargets.Add(new AnimationTarget(childScreen));
+                continue;
+            }
+
+            if (_collectChildAnimationsOnAwake && child.TryGetComponent(out UiAnimation animation))
+            {
+                _animations.Add(animation);
+                _animationTargets.Add(new AnimationTarget(animation));
+            }
+
+            CollectTargetsInHierarchy(child);
+        }
     }
 }

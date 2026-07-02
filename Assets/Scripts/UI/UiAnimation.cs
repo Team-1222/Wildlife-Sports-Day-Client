@@ -39,6 +39,37 @@ public sealed class UiAnimation : MonoBehaviour
         public Vector2 FromPosition => _fromPosition;
         public Vector2 ToPosition => _toPosition;
         public Vector2 Offset => _offset;
+
+        public void CopyFrom(AnimationSettings source)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            _useFade = source._useFade;
+            _fromAlpha = source._fromAlpha;
+            _toAlpha = source._toAlpha;
+
+            _useScale = source._useScale;
+            _scaleFromSavedState = source._scaleFromSavedState;
+            _fromScale = source._fromScale;
+            _toScale = source._toScale;
+
+            _useMove = source._useMove;
+            _movePreset = source._movePreset;
+            _offset = source._offset;
+
+            if (source._movePreset == MovePreset.Custom)
+            {
+                _moveFromSavedState = source._moveFromSavedState;
+                _fromPosition = source._fromPosition;
+                _toPosition = source._toPosition;
+                return;
+            }
+
+            _moveFromSavedState = true;
+        }
     }
 
     public enum MovePreset
@@ -54,7 +85,7 @@ public sealed class UiAnimation : MonoBehaviour
     [SerializeField, Min(0f)] private float _delay;
     [SerializeField] private Ease _ease = Ease.OutQuad;
     [SerializeField] private bool _useUnscaledTime = true;
-    [SerializeField] private bool _saveInitialStateOnAwake = true;
+    [SerializeField] private bool _useSameSettingsForShowAndHide = true;
 
     [SerializeField] private AnimationSettings _showSettings = new();
     [SerializeField] private UnityEvent _showCompleted;
@@ -74,14 +105,26 @@ public sealed class UiAnimation : MonoBehaviour
     public float Duration => _duration;
     public float Delay => _delay;
 
+    public void CopySettingsFrom(UiAnimation source)
+    {
+        if (source == null || source == this)
+        {
+            return;
+        }
+
+        _duration = source._duration;
+        _delay = source._delay;
+        _ease = source._ease;
+        _useUnscaledTime = source._useUnscaledTime;
+        _useSameSettingsForShowAndHide = source._useSameSettingsForShowAndHide;
+        _showSettings.CopyFrom(source._showSettings);
+        _hideSettings.CopyFrom(source._hideSettings);
+    }
+
     private void Awake()
     {
         CacheComponents();
-
-        if (_saveInitialStateOnAwake)
-        {
-            SaveInitialState();
-        }
+        SaveInitialState();
     }
 
     private void OnDisable()
@@ -96,12 +139,14 @@ public sealed class UiAnimation : MonoBehaviour
 
     public Tween PlayShow()
     {
-        return Play(_showSettings, _showCompleted);
+        return Play(_showSettings, _showCompleted, false);
     }
 
     public Tween PlayHide()
     {
-        return Play(_hideSettings, _hideCompleted);
+        return _useSameSettingsForShowAndHide
+            ? Play(_showSettings, _hideCompleted, true)
+            : Play(_hideSettings, _hideCompleted, false);
     }
 
     public void ApplyShowStartState()
@@ -162,7 +207,7 @@ public sealed class UiAnimation : MonoBehaviour
         _sequence = null;
     }
 
-    private Tween Play(AnimationSettings settings, UnityEvent completed)
+    private Tween Play(AnimationSettings settings, UnityEvent completed, bool reverse)
     {
         CacheComponents();
 
@@ -179,52 +224,57 @@ public sealed class UiAnimation : MonoBehaviour
             .SetEase(_ease)
             .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
 
-        ApplyStartState(settings);
-        AppendTweens(settings);
+        ApplyStartState(settings, reverse);
+        AppendTweens(settings, reverse);
 
         _sequence.OnComplete(() => completed?.Invoke());
         return _sequence;
     }
 
-    private void ApplyStartState(AnimationSettings settings)
+    private void ApplyStartState(AnimationSettings settings, bool reverse = false)
     {
         if (settings.UseFade)
         {
             EnsureCanvasGroup();
-            _canvasGroup.alpha = settings.FromAlpha;
+            _canvasGroup.alpha = reverse ? settings.ToAlpha : settings.FromAlpha;
         }
 
         if (settings.UseScale)
         {
-            _rectTransform.localScale = settings.ScaleFromSavedState ? _savedScale : settings.FromScale;
+            _rectTransform.localScale = reverse
+                ? settings.ToScale
+                : (settings.ScaleFromSavedState ? _savedScale : settings.FromScale);
         }
 
         if (settings.UseMove)
         {
-            _rectTransform.anchoredPosition = ResolveMovePosition(settings, true);
+            _rectTransform.anchoredPosition = ResolveMovePosition(settings, true, reverse);
         }
     }
 
-    private void AppendTweens(AnimationSettings settings)
+    private void AppendTweens(AnimationSettings settings, bool reverse)
     {
         bool hasTween = false;
 
         if (settings.UseFade)
         {
             EnsureCanvasGroup();
-            _sequence.Join(_canvasGroup.DOFade(settings.ToAlpha, _duration));
+            _sequence.Join(_canvasGroup.DOFade(reverse ? settings.FromAlpha : settings.ToAlpha, _duration));
             hasTween = true;
         }
 
         if (settings.UseScale)
         {
-            _sequence.Join(_rectTransform.DOScale(settings.ToScale, _duration));
+            Vector3 targetScale = reverse
+                ? (settings.ScaleFromSavedState ? _savedScale : settings.FromScale)
+                : settings.ToScale;
+            _sequence.Join(_rectTransform.DOScale(targetScale, _duration));
             hasTween = true;
         }
 
         if (settings.UseMove)
         {
-            _sequence.Join(_rectTransform.DOAnchorPos(ResolveMovePosition(settings, false), _duration));
+            _sequence.Join(_rectTransform.DOAnchorPos(ResolveMovePosition(settings, false, reverse), _duration));
             hasTween = true;
         }
 
@@ -234,11 +284,13 @@ public sealed class UiAnimation : MonoBehaviour
         }
     }
 
-    private Vector2 ResolveMovePosition(AnimationSettings settings, bool isStart)
+    private Vector2 ResolveMovePosition(AnimationSettings settings, bool isStart, bool reverse = false)
     {
         if (settings.MovePreset == MovePreset.Custom)
         {
-            return isStart ? settings.FromPosition : settings.ToPosition;
+            return reverse
+                ? (isStart ? settings.ToPosition : settings.FromPosition)
+                : (isStart ? settings.FromPosition : settings.ToPosition);
         }
 
         Vector2 basePosition = settings.MoveFromSavedState ? _savedAnchoredPosition : settings.ToPosition;
@@ -251,7 +303,9 @@ public sealed class UiAnimation : MonoBehaviour
             _ => settings.Offset,
         };
 
-        return isStart ? basePosition + offset : basePosition;
+        return reverse
+            ? (isStart ? basePosition : basePosition + offset)
+            : (isStart ? basePosition + offset : basePosition);
     }
 
     private void CacheComponents()
