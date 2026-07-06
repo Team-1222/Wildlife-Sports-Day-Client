@@ -3478,13 +3478,13 @@ MonoBehaviour:
     _useClickPunch: 1
     _clickPunchScale: {x: 0.08, y: 0.08, z: 0}
     _clickPunchDuration: 0.18
-  _clickAction: 0
+  _clickAction: 4
   _currentScreen: {fileID: 0}
   _targetScreen: {fileID: 0}
   _transitionMode: 0
   _useTransitionAnimation: 1
   _blockClickDuringAction: 1
-  _sceneName: 
+  _sceneName: MinigameSelectScene
   _loadSceneMode: 0
   _targetGameObject: {fileID: 0}
   _setActiveValue: 1
