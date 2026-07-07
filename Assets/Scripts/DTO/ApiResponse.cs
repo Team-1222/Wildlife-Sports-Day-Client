@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
+using System;
 
-
+[Serializable]
 public class ApiResponse<T>
 {
     [JsonProperty("success")]
