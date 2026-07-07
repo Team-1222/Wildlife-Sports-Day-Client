@@ -15,8 +15,8 @@ EditorBuildSettings:
     path: Assets/Scenes/GameScene.unity
     guid: 551a7a4bbb0b5d54e948b11176422d20
   - enabled: 1
-    path: Assets/Scenes/MinigameSelectScene.unity
-    guid: ae147d6fc1fce3543b821168d1fb8be6
+    path: Assets/Scenes/Minigames/Minigame_KeyboardMashPolarBear.unity
+    guid: d5337346dbc746e99f905a4a8691d5e2
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

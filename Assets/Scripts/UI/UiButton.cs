@@ -435,6 +435,12 @@ public sealed class UiButton : Button
         }
 
         _actionCompleted?.Invoke();
+        if (_sceneName == GameLoopSession.RandomMinigameSceneName)
+        {
+            SceneManager.LoadScene(GameLoopSession.StartRunAndGetFirstScene(), _loadSceneMode);
+            return;
+        }
+
         SceneManager.LoadScene(_sceneName, _loadSceneMode);
     }
 
