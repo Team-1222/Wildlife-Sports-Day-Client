@@ -43,6 +43,8 @@
 
 ## Canvas / 해상도 체크리스트
 
+- [ ] 새 UI/HUD가 기존 씬 Canvas의 Render Mode, Camera, CanvasScaler 설정을 따르거나, 전체 게임 HUD처럼 사용자 확인된 예외 사유가 있는가
+- [ ] 기존에 없는 Overlay Canvas나 대체 카메라 탐색 로직을 임의로 추가하지 않았는가
 - [ ] 기준 해상도에서 Canvas가 깨지지 않는가
 - [ ] 16:9 해상도에서 UI가 겹치지 않는가
 - [ ] 창 크기 변경 시 주요 UI가 화면 밖으로 나가지 않는가
