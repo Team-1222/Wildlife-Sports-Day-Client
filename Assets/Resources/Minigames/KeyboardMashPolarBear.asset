@@ -20,6 +20,7 @@ MonoBehaviour:
   _characterType: 1
   _controlType: 1
   _difficulty: 0
+  _isRandomSelectionEnabled: 1
   _score: 300
   _targetCount: 20
   _sceneName: Minigame_KeyboardMashPolarBear

@@ -5,4 +5,6 @@ public enum MinigameCharacterType
     GrizzlyBear,
     Spider,
     Flamingo,
+    Meerkat,
+    Snake,
 }

@@ -219,7 +219,9 @@ public static class GameLoopSession
         List<MinigameDefinition> pool = new(definitions.Length);
         for (int i = 0; i < definitions.Length; i++)
         {
-            if (definitions[i] != null && !string.IsNullOrWhiteSpace(definitions[i].SceneName))
+            if (definitions[i] != null &&
+                definitions[i].IsRandomSelectionEnabled &&
+                !string.IsNullOrWhiteSpace(definitions[i].SceneName))
             {
                 pool.Add(definitions[i]);
             }

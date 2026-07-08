@@ -19,6 +19,7 @@ public sealed class MinigameDefinition : ScriptableObject
     [SerializeField] private MinigameDifficultyType _difficulty = MinigameDifficultyType.Normal;
 
     [Header("진행")]
+    [SerializeField] private bool _isRandomSelectionEnabled = true;
     [SerializeField, Min(0)] private int _score = 100;
     [SerializeField, Min(1)] private int _targetCount = 1;
     [SerializeField] private string _sceneName = "GameScene";
@@ -43,6 +44,7 @@ public sealed class MinigameDefinition : ScriptableObject
     public MinigameCharacterType CharacterType => _characterType;
     public MinigameControlType ControlType => _controlType;
     public MinigameDifficultyType Difficulty => _difficulty;
+    public bool IsRandomSelectionEnabled => _isRandomSelectionEnabled;
     public int Score => _score;
     public int TargetCount => _targetCount;
     public string SceneName => _sceneName;
