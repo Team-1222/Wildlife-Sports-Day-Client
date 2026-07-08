@@ -14,17 +14,23 @@ public sealed class MinigameSceneController : MonoBehaviour
     [SerializeField] private TMP_Text _progressText;
     [SerializeField] private Button _completeButton;
 
+    private bool _isIntroFinished;
+    private bool _isEnabled;
+
     /// <summary>
-    /// 완료 버튼 이벤트를 연결하고 현재 미니게임 정보를 표시합니다.
+    /// 완료 버튼 이벤트를 연결하고 공통 인트로 패널을 먼저 표시합니다.
     /// </summary>
     private void OnEnable()
     {
+        _isEnabled = true;
+        _isIntroFinished = false;
+
         if (_completeButton != null)
         {
             _completeButton.onClick.AddListener(CompleteMinigame);
         }
 
-        RefreshTexts();
+        MinigameIntroController.Show(HandleIntroClosed);
     }
 
     /// <summary>
@@ -32,6 +38,8 @@ public sealed class MinigameSceneController : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        _isEnabled = false;
+
         if (_completeButton != null)
         {
             _completeButton.onClick.RemoveListener(CompleteMinigame);
@@ -43,6 +51,11 @@ public sealed class MinigameSceneController : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        if (!_isIntroFinished)
+        {
+            return;
+        }
+
         GameLoopSession.Tick(Time.deltaTime);
         if (GameLoopSession.IsResultRequested)
         {
@@ -56,6 +69,20 @@ public sealed class MinigameSceneController : MonoBehaviour
             return;
         }
 
+        RefreshTexts();
+    }
+
+    /// <summary>
+    /// 인트로 패널이 닫힌 뒤 플레이스홀더 미니게임 표시를 시작합니다.
+    /// </summary>
+    private void HandleIntroClosed()
+    {
+        if (!_isEnabled)
+        {
+            return;
+        }
+
+        _isIntroFinished = true;
         RefreshTexts();
     }
 

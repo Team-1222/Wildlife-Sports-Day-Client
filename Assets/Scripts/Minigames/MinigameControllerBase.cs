@@ -7,17 +7,30 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public abstract class MinigameControllerBase : MonoBehaviour
 {
+    private bool _isIntroFinished;
+    private bool _isEnabled;
+
     /// <summary>
     /// 현재 세션에서 선택된 미니게임 정의 에셋입니다.
     /// </summary>
     protected MinigameDefinition Definition => GameLoopSession.CurrentMinigameDefinition;
 
     /// <summary>
-    /// 미니게임 오브젝트가 활성화될 때 하위 컨트롤러의 시작 처리를 호출합니다.
+    /// 미니게임 오브젝트가 활성화될 때 공통 인트로 패널을 먼저 표시합니다.
     /// </summary>
     protected virtual void OnEnable()
     {
-        OnMinigameStarted();
+        _isEnabled = true;
+        _isIntroFinished = false;
+        MinigameIntroController.Show(HandleIntroClosed);
+    }
+
+    /// <summary>
+    /// 비활성화된 컨트롤러에서 늦게 도착한 인트로 콜백이 시작 로직을 실행하지 않게 합니다.
+    /// </summary>
+    protected virtual void OnDisable()
+    {
+        _isEnabled = false;
     }
 
     /// <summary>
@@ -25,6 +38,11 @@ public abstract class MinigameControllerBase : MonoBehaviour
     /// </summary>
     protected virtual void Update()
     {
+        if (!_isIntroFinished)
+        {
+            return;
+        }
+
         GameLoopSession.Tick(Time.deltaTime);
         if (GameLoopSession.IsResultRequested || !GameLoopSession.IsPlayingMinigame)
         {
@@ -62,6 +80,20 @@ public abstract class MinigameControllerBase : MonoBehaviour
     /// 미니게임별 입력, 진행도, 표시 갱신을 하위 컨트롤러에서 구현합니다.
     /// </summary>
     protected abstract void TickMinigame();
+
+    /// <summary>
+    /// 인트로 패널이 닫힌 뒤 실제 미니게임 시작 처리를 실행합니다.
+    /// </summary>
+    private void HandleIntroClosed()
+    {
+        if (!_isEnabled)
+        {
+            return;
+        }
+
+        _isIntroFinished = true;
+        OnMinigameStarted();
+    }
 
     /// <summary>
     /// 세션이 고른 다음 미니게임 또는 결과 씬을 로드합니다.
