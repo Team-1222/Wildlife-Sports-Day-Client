@@ -5,11 +5,11 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
-public class RegisterManager<T> : MonoBehaviour
+public class RegisterManager : MonoBehaviour
 {
     [Header("URL 모음")]
     private string _baseURL = "https://localhost:7037/api/auth";
-    private string _requestSendEmailCodeURL = "email-code/send";
+    private string _requestSendEmailCodeURL = "/email-code/send";
     private string _verifyEmailCodeURL = "/email-code/verify";
     private string _registerURL = "/register";
 
@@ -18,6 +18,8 @@ public class RegisterManager<T> : MonoBehaviour
     private string _password = string.Empty;
     private string _nickName = string.Empty;
     private string _insertCode = string.Empty;
+    private float _verificationCodeRequestTime = 60f; // 인증 코드 쿨다운(초)
+    private int _maxVerificationAttempts = 5;// 최대 인증 시도 횟수
 
     [Header("Text 필드")]
     [SerializeField] private TMP_InputField emailText;
@@ -30,10 +32,15 @@ public class RegisterManager<T> : MonoBehaviour
     [Header("DTO 필드")]
     [SerializeField] private RegisterResponse registerResponse;
     [SerializeField] private ApiResponse<RegisterResponse> registerApiResponse;
-    [SerializeField] private ApiResponse<T> requestCodeResponse;
-    [SerializeField] private ApiResponse<T> verifyCodeResponse;
+    [SerializeField] private ApiResponse<MessageResponse> requestCodeResponse;
+    [SerializeField] private ApiResponse<MessageResponse> verifyCodeResponse;
 
-    [SerializeField] private int _maxVerificationAttempts = 5;// 최대 인증 시도 횟수
+    [SerializeField] private float _cooldownTimer = 0f;
+
+    void Update()
+    {
+        _cooldownTimer += Time.deltaTime;
+    }
 
     public void OnRequestEmailCode()
     {
@@ -41,6 +48,12 @@ public class RegisterManager<T> : MonoBehaviour
         {
             Debug.Log("이메일을 입력해주세요");
             return;
+        }
+        else if (_cooldownTimer < _verificationCodeRequestTime)
+        {
+            float remainingTime = _verificationCodeRequestTime - _cooldownTimer;
+            sendOrNot.text = $"{remainingTime:F0}초 후에 다시 요청해주세요.";
+            Debug.Log("코드 요청이 너무 빠름");
         }
         else
         {
@@ -56,11 +69,19 @@ public class RegisterManager<T> : MonoBehaviour
 
     public void OnVerifyEmailCode()
     {
-        if(_maxVerificationAttempts > 0)
-        StartCoroutine(VerifyEmailCode((response) =>
+        if (_maxVerificationAttempts > 0)
         {
-            verifyCodeResponse = response;
-        }));
+            _insertCode = codeText.text;
+            StartCoroutine(VerifyEmailCode((response) =>
+            {
+                verifyCodeResponse = response;
+            }));
+        }
+        else
+        {
+            sendOrNot.text = "인증 시도 횟수를 초과했습니다. 코드를 다시 요청해 주세요";
+            Debug.Log("인증 시도 횟수를 초과했습니다. 코드를 다시 요청해 주세요");
+        }
     }
 
     public void OnRegister()
@@ -106,7 +127,7 @@ public class RegisterManager<T> : MonoBehaviour
         }));
     }
 
-    public IEnumerator RequestEmailCode(Action<ApiResponse<T>> response)
+    public IEnumerator RequestEmailCode(Action<ApiResponse<MessageResponse>> response)
     {   
         string url = _baseURL + _requestSendEmailCodeURL;
         var body = new SendVerificationCodeRequest
@@ -126,7 +147,7 @@ public class RegisterManager<T> : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 Debug.Log("이메일 인증 코드 전송 성공");
-                response?.Invoke(JsonConvert.DeserializeObject<ApiResponse<T>>(request.downloadHandler.text));
+                response?.Invoke(JsonConvert.DeserializeObject<ApiResponse<MessageResponse>>(request.downloadHandler.text));
                 sendOrNot.text = "인증코드가 전송되었습니다.";
             }
             else
@@ -136,13 +157,13 @@ public class RegisterManager<T> : MonoBehaviour
             }
         }
     }
-    public IEnumerator VerifyEmailCode(Action<ApiResponse<T>> response)
+    public IEnumerator VerifyEmailCode(Action<ApiResponse<MessageResponse>> response)
     {
         string url = _baseURL + _verifyEmailCodeURL;
         var body = new VerifyEmailCodeRequest
         {
             Email = _email,
-            Code = codeText.text
+            Code = _insertCode
         };
         
         string json = JsonConvert.SerializeObject(body);
@@ -157,7 +178,7 @@ public class RegisterManager<T> : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 Debug.Log("이메일 인증 코드 검증 성공");
-                response?.Invoke(JsonConvert.DeserializeObject<ApiResponse<T>>(request.downloadHandler.text));
+                response?.Invoke(JsonConvert.DeserializeObject<ApiResponse<MessageResponse>>(request.downloadHandler.text));
                 sendOrNot.text = "인증코드가 확인되었습니다.";
             }
             else
