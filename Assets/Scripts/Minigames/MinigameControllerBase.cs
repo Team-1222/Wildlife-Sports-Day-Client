@@ -100,6 +100,11 @@ public abstract class MinigameControllerBase : MonoBehaviour
     /// </summary>
     private static void LoadNextScene()
     {
-        SceneManager.LoadScene(GameLoopSession.GetNextSceneNameOrResult(), LoadSceneMode.Single);
+        if (SceneTransitionController.IsTransitioning)
+        {
+            return;
+        }
+
+        SceneTransitionController.LoadScene(GameLoopSession.GetNextSceneNameOrResult(), LoadSceneMode.Single);
     }
 }

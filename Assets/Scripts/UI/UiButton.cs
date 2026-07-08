@@ -403,7 +403,7 @@ public sealed class UiButton : Button
                 return;
             case ButtonActionType.ReloadScene:
                 _actionCompleted?.Invoke();
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                SceneTransitionController.LoadScene(SceneManager.GetActiveScene().name);
                 return;
             case ButtonActionType.QuitGame:
                 _actionCompleted?.Invoke();
@@ -437,11 +437,11 @@ public sealed class UiButton : Button
         _actionCompleted?.Invoke();
         if (_sceneName == GameLoopSession.RandomMinigameSceneName)
         {
-            SceneManager.LoadScene(GameLoopSession.StartRunAndGetFirstScene(), _loadSceneMode);
+            SceneTransitionController.LoadScene(GameLoopSession.StartRunAndGetFirstScene(), _loadSceneMode);
             return;
         }
 
-        SceneManager.LoadScene(_sceneName, _loadSceneMode);
+        SceneTransitionController.LoadScene(_sceneName, _loadSceneMode);
     }
 
     private IEnumerator WaitForAction(Tween actionTween)

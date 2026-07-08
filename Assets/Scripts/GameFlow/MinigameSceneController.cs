@@ -126,6 +126,11 @@ public sealed class MinigameSceneController : MonoBehaviour
     /// </summary>
     private static void LoadNextScene()
     {
-        SceneManager.LoadScene(GameLoopSession.GetNextSceneNameOrResult(), LoadSceneMode.Single);
+        if (SceneTransitionController.IsTransitioning)
+        {
+            return;
+        }
+
+        SceneTransitionController.LoadScene(GameLoopSession.GetNextSceneNameOrResult(), LoadSceneMode.Single);
     }
 }
