@@ -34,8 +34,13 @@ public static class GameLoopSession
     public static string StartRunAndGetFirstScene()
     {
         Start(DefaultDurationSeconds);
-        GameHudController.Show();
-        return GetNextSceneNameOrResult();
+        string nextSceneName = GetNextSceneNameOrResult();
+        if (IsActive && !IsResultRequested)
+        {
+            GameHudController.ShowAfterNextSceneLoaded();
+        }
+
+        return nextSceneName;
     }
 
     /// <summary>

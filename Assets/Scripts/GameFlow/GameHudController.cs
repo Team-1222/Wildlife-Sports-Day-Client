@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 전체 게임 런 동안 유지되는 점수/남은 시간 HUD를 화면 위에 표시합니다.
@@ -10,6 +11,7 @@ public sealed class GameHudController : MonoBehaviour
     private const string HudPrefabResourcePath = "UI/GameHudCanvas";
 
     private static GameHudController _instance;
+    private static bool _isShowAfterSceneLoadRegistered;
 
     [SerializeField] private TMP_Text _scoreValueText;
     [SerializeField] private TMP_Text _timerValueText;
@@ -27,6 +29,20 @@ public sealed class GameHudController : MonoBehaviour
 
         _instance.gameObject.SetActive(true);
         _instance.Refresh();
+    }
+
+    /// <summary>
+    /// 다음 씬 로드가 끝난 뒤 HUD를 표시하도록 예약합니다.
+    /// </summary>
+    public static void ShowAfterNextSceneLoaded()
+    {
+        if (_isShowAfterSceneLoadRegistered)
+        {
+            return;
+        }
+
+        _isShowAfterSceneLoadRegistered = true;
+        SceneManager.sceneLoaded += HandleSceneLoadedForShow;
     }
 
     /// <summary>
@@ -115,6 +131,22 @@ public sealed class GameHudController : MonoBehaviour
         }
 
         Instantiate(prefab);
+    }
+
+    /// <summary>
+    /// 씬 로드 완료 이벤트를 받아 HUD 표시 예약을 한 번만 처리합니다.
+    /// </summary>
+    private static void HandleSceneLoadedForShow(Scene scene, LoadSceneMode mode)
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoadedForShow;
+        _isShowAfterSceneLoadRegistered = false;
+
+        if (!GameLoopSession.IsActive || GameLoopSession.IsResultRequested)
+        {
+            return;
+        }
+
+        Show();
     }
 
     /// <summary>
