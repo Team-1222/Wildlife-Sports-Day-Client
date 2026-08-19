@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "com.ugui.extensions": {
+      "version": "https://github.com/nelu572/Unity-UI-Extensions.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.ugui": "2.0.0"
+      },
+      "hash": "57f818ee99f2952e7438fd5249eef92ea43349cc"
+    },
     "com.unity.ai.navigation": {
       "version": "2.0.10",
       "depth": 0,
