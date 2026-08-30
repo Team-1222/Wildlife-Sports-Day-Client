@@ -11,7 +11,7 @@ public sealed class MinigameSelectionController : MonoBehaviour
 {
     [SerializeField] private RectTransform _cardTrack;
     [SerializeField] private MinigameSelectionCard[] _cards;
-    [SerializeField, Min(0.1f)] private float _spinDurationSeconds = 1.2f;
+    [SerializeField, Min(0.1f)] private float _spinDurationSeconds = 4f;
     [SerializeField, Min(0f)] private float _selectionHoldSeconds = 0.35f;
     [SerializeField, Min(1f)] private float _cardSpacing = 470f;
 
@@ -46,7 +46,7 @@ public sealed class MinigameSelectionController : MonoBehaviour
         }
 
         PopulateCards();
-        StartCoroutine(SpinRoutine());
+        StartCoroutine(WaitForTransitionAndSpinRoutine());
     }
 
     /// <summary>
@@ -98,7 +98,7 @@ public sealed class MinigameSelectionController : MonoBehaviour
         {
             elapsedSeconds += Time.unscaledDeltaTime;
             float progress = Mathf.Clamp01(elapsedSeconds / _spinDurationSeconds);
-            float easedProgress = 1f - Mathf.Pow(1f - progress, 3f);
+            float easedProgress = 1f - Mathf.Pow(1f - progress, 1.5f);
             _cardTrack.anchoredPosition = new Vector2(Mathf.Lerp(startX, 0f, easedProgress), _cardTrack.anchoredPosition.y);
             RefreshHighlight();
             yield return null;
@@ -115,6 +115,19 @@ public sealed class MinigameSelectionController : MonoBehaviour
 
         _isFinished = true;
         SceneTransitionController.LoadScene(GameLoopSession.GetCurrentMinigameSceneNameOrResult(), LoadSceneMode.Single);
+    }
+
+    /// <summary>
+    /// 씬 전환 셰이더가 완전히 사라진 뒤 카드 이동을 시작해 연출이 가려지지 않게 합니다.
+    /// </summary>
+    private IEnumerator WaitForTransitionAndSpinRoutine()
+    {
+        while (SceneTransitionController.IsTransitioning)
+        {
+            yield return null;
+        }
+
+        yield return SpinRoutine();
     }
 
     /// <summary>

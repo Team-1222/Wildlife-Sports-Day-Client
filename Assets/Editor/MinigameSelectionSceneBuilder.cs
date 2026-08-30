@@ -3,7 +3,6 @@ using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -56,12 +55,11 @@ public static class MinigameSelectionSceneBuilder
             cardsProperty.GetArrayElementAtIndex(i).objectReferenceValue = cards[i];
         }
 
-        controllerSerialized.FindProperty("_spinDurationSeconds").floatValue = 1.2f;
+        controllerSerialized.FindProperty("_spinDurationSeconds").floatValue = 4f;
         controllerSerialized.FindProperty("_selectionHoldSeconds").floatValue = 0.35f;
         controllerSerialized.FindProperty("_cardSpacing").floatValue = CardSpacing;
         controllerSerialized.ApplyModifiedPropertiesWithoutUndo();
 
-        CreateEventSystem();
         EditorSceneManager.SaveScene(scene, ScenePath);
         ConfigureBuildSettings();
         AssetDatabase.SaveAssets();
@@ -255,12 +253,6 @@ public static class MinigameSelectionSceneBuilder
         rectTransform.anchorMax = Vector2.one;
         rectTransform.offsetMin = new Vector2(inset, inset);
         rectTransform.offsetMax = new Vector2(-inset, -inset);
-    }
-
-    private static void CreateEventSystem()
-    {
-        GameObject eventSystemObject = new("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
-        eventSystemObject.GetComponent<EventSystem>().sendNavigationEvents = false;
     }
 
     private static void ConfigureBuildSettings()
