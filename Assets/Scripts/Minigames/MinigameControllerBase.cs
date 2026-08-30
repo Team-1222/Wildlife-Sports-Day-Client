@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 /// <summary>
@@ -47,6 +48,12 @@ public abstract class MinigameControllerBase : MonoBehaviour
         if (GameLoopSession.IsResultRequested || !GameLoopSession.IsPlayingMinigame)
         {
             LoadNextScene();
+            return;
+        }
+
+        if (IsDebugCompletePressed())
+        {
+            CompleteMinigame(3);
             return;
         }
 
@@ -106,5 +113,14 @@ public abstract class MinigameControllerBase : MonoBehaviour
         }
 
         SceneTransitionController.LoadScene(GameLoopSession.GetNextSceneNameOrResult(), LoadSceneMode.Single);
+    }
+
+    /// <summary>
+    /// 게임 루프 연결 확인을 위해 0키 입력으로 현재 미니게임을 즉시 3성 완료 처리합니다.
+    /// </summary>
+    private static bool IsDebugCompletePressed()
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && (keyboard.digit0Key.wasPressedThisFrame || keyboard.numpad0Key.wasPressedThisFrame);
     }
 }

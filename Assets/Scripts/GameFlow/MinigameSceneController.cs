@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -69,6 +70,12 @@ public sealed class MinigameSceneController : MonoBehaviour
             return;
         }
 
+        if (IsDebugCompletePressed())
+        {
+            CompleteMinigame();
+            return;
+        }
+
         RefreshTexts();
     }
 
@@ -132,5 +139,14 @@ public sealed class MinigameSceneController : MonoBehaviour
         }
 
         SceneTransitionController.LoadScene(GameLoopSession.GetNextSceneNameOrResult(), LoadSceneMode.Single);
+    }
+
+    /// <summary>
+    /// 게임 루프 연결 확인을 위해 0키 입력으로 현재 미니게임을 즉시 3성 완료 처리합니다.
+    /// </summary>
+    private static bool IsDebugCompletePressed()
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && (keyboard.digit0Key.wasPressedThisFrame || keyboard.numpad0Key.wasPressedThisFrame);
     }
 }

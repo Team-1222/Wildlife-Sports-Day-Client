@@ -7,10 +7,11 @@ using UnityEngine;
 public static class GameLoopSession
 {
     public const string RandomMinigameSceneName = "RandomMinigame";
+    public const string MinigameSelectionSceneName = "MinigameSelection";
+    public const string ResultSceneName = "MainScene";
 
     private const float DefaultDurationSeconds = 120f;
     private const string MinigameResourcePath = "Minigames";
-    private const string TemporaryResultSceneName = "MainScene";
 
     private static int _lastTickFrame = -1;
 
@@ -29,18 +30,13 @@ public static class GameLoopSession
     public static bool IsPlayingMinigame => !string.IsNullOrEmpty(CurrentMinigameName);
 
     /// <summary>
-    /// 새 게임 런을 시작하고 첫 랜덤 미니게임 씬 이름을 반환합니다.
+    /// 새 게임 런을 시작하고 첫 미니게임을 뽑을 선택 씬 이름을 반환합니다.
     /// </summary>
     public static string StartRunAndGetFirstScene()
     {
         Start(DefaultDurationSeconds);
-        string nextSceneName = GetNextSceneNameOrResult();
-        if (IsActive && !IsResultRequested)
-        {
-            GameHudController.ShowAfterNextSceneLoaded();
-        }
-
-        return nextSceneName;
+        GameHudController.ShowAfterNextSceneLoaded();
+        return MinigameSelectionSceneName;
     }
 
     /// <summary>
@@ -165,25 +161,46 @@ public static class GameLoopSession
     }
 
     /// <summary>
-    /// 다음 랜덤 미니게임 씬을 고르거나 결과 화면 씬 이름을 반환합니다.
+    /// 다음 미니게임을 뽑을 선택 씬 또는 결과 화면 씬 이름을 반환합니다.
     /// </summary>
     public static string GetNextSceneNameOrResult()
     {
         if (!IsActive || IsResultRequested || RemainingSeconds <= 0f)
         {
             RequestResult();
-            return TemporaryResultSceneName;
+            return ResultSceneName;
         }
 
-        if (!SelectNextRandomMinigame())
+        return MinigameSelectionSceneName;
+    }
+
+    /// <summary>
+    /// 카드 선택 연출에서 사용할 다음 랜덤 미니게임을 하나 확정합니다.
+    /// </summary>
+    public static bool TrySelectRandomMinigame(out MinigameDefinition selectedDefinition)
+    {
+        selectedDefinition = null;
+        if (!IsActive || IsResultRequested || !SelectNextRandomMinigame())
+        {
+            return false;
+        }
+
+        selectedDefinition = CurrentMinigameDefinition;
+        return selectedDefinition != null;
+    }
+
+    /// <summary>
+    /// 카드 연출에서 확정된 미니게임 씬 또는 결과 화면 씬 이름을 반환합니다.
+    /// </summary>
+    public static string GetCurrentMinigameSceneNameOrResult()
+    {
+        if (!IsActive || IsResultRequested || CurrentMinigameDefinition == null || string.IsNullOrWhiteSpace(CurrentMinigameDefinition.SceneName))
         {
             RequestResult();
-            return TemporaryResultSceneName;
+            return ResultSceneName;
         }
 
-        return string.IsNullOrWhiteSpace(CurrentMinigameDefinition.SceneName)
-            ? TemporaryResultSceneName
-            : CurrentMinigameDefinition.SceneName;
+        return CurrentMinigameDefinition.SceneName;
     }
 
     /// <summary>
