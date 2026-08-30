@@ -5,7 +5,7 @@ using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 
 /// <summary>
-/// F키 연타 횟수로 배경 트랙을 이동시키고, 도달 거리로 별 등급을 계산하는 미니게임 컨트롤러입니다.
+/// F키 연타로 북극곰과 카메라를 전진시키고, 제한 시간 안의 도달 거리로 별 등급을 계산하는 미니게임 컨트롤러입니다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class KeyboardMashPolarBearController : MinigameControllerBase
@@ -13,76 +13,95 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
     [SerializeField] private TMP_Text _titleText;
     [SerializeField] private TMP_Text _descriptionText;
     [SerializeField] private TMP_Text _progressText;
+    [SerializeField] private TMP_Text _timerText;
+    [SerializeField] private TMP_Text _gradeText;
     [SerializeField] private Button _completeButton;
     [SerializeField] private Key _buttonMashKey = Key.F;
     [SerializeField] private Transform _runnerRoot;
-    [SerializeField] private Transform _movingTrackRoot;
-    [SerializeField] private bool _useTrackInitialPositionAsStart = true;
-    [SerializeField] private Vector3 _trackStartPosition = Vector3.zero;
-    [SerializeField] private Vector3 _trackFinishPosition = new(-40f, 0f, 0f);
+    [SerializeField] private Transform _followCamera;
+    [SerializeField] private Vector3 _cameraFollowOffset = new(0.5f, 5.85f, -15f);
+    [SerializeField] private Vector3 _cameraFollowEulerAngles = new(20f, 25f, 0f);
+    [SerializeField, Min(0.1f)] private float _roundDurationSeconds = 6f;
+    [SerializeField, Min(0.1f)] private float _distancePerMash = 4f;
     [SerializeField, Min(0.1f)] private float _moveLerpSpeed = 14f;
+    [SerializeField, Min(0.1f)] private float _cameraLerpSpeed = 7f;
+    [SerializeField, Min(0f)] private float _cameraSwayPositionAmount = 0.06f;
+    [SerializeField, Min(0f)] private float _cameraSwayRotationAmount = 0.45f;
+    [SerializeField, Min(0.01f)] private float _cameraSwayDecaySpeed = 3.5f;
 
     private int _buttonMashCount;
-    private Vector3 _targetPosition;
-    private float _targetProgress;
+    private Vector3 _runnerStartPosition;
+    private Vector3 _runnerTargetPosition;
+    private float _roundRemainingSeconds;
+    private float _cameraSwayStrength;
 
-    /// <summary>
-    /// 미니게임 씬 진입 시 진행 상태와 트랙 위치를 시작 상태로 맞춥니다.
-    /// </summary>
     protected override void OnMinigameStarted()
     {
         _buttonMashCount = 0;
+        _roundRemainingSeconds = _roundDurationSeconds;
         SetCompleteButtonActive(false);
-        ApplySceneTrackStartPosition();
-        SetTrackProgress(0f, true);
+        ResetRunnerAndCamera();
         RefreshTexts();
     }
 
-    /// <summary>
-    /// 입력/트랙 이동/표시 갱신처럼 북극곰 미니게임 전용 갱신을 처리합니다.
-    /// </summary>
     protected override void TickMinigame()
     {
         TickButtonMash();
-        MoveTrack();
-        RefreshTexts();
+        if (!GameLoopSession.IsPlayingMinigame)
+        {
+            return;
+        }
+
+        MoveRunnerAndCamera();
+        TickRoundTimer();
+        if (GameLoopSession.IsPlayingMinigame)
+        {
+            RefreshTexts();
+        }
     }
 
-    /// <summary>
-    /// 연타 키 입력을 누적하고 3성 목표에 도달하면 미니게임을 완료합니다.
-    /// </summary>
     private void TickButtonMash()
     {
         MinigameDefinition definition = Definition;
-        if (definition == null)
+        if (definition == null || Keyboard.current == null)
         {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-        {
-            return;
-        }
-
-        KeyControl keyControl = keyboard[_buttonMashKey];
+        KeyControl keyControl = Keyboard.current[_buttonMashKey];
         if (keyControl == null || !keyControl.wasPressedThisFrame)
         {
             return;
         }
 
         _buttonMashCount++;
-        SetTrackProgress(GetProgress01(definition), false);
+        AddCameraSway();
+        SetRunnerProgress(GetProgress01(definition), false);
         if (_buttonMashCount >= definition.ThreeStarTargetCount)
         {
-            SetTrackProgress(1f, true);
-            CompleteMinigame(GetDistanceStarGrade(definition));
+            SetRunnerProgress(1f, true);
+            CompleteMinigame(3);
         }
     }
 
-    /// <summary>
-    /// 현재 이동 거리와 별 등급 정보를 씬 UI에 반영합니다.
-    /// </summary>
+    private void TickRoundTimer()
+    {
+        _roundRemainingSeconds = Mathf.Max(0f, _roundRemainingSeconds - Time.deltaTime);
+        if (_roundRemainingSeconds > 0f)
+        {
+            return;
+        }
+
+        int stars = GetDistanceStarGrade(Definition);
+        if (stars > 0)
+        {
+            CompleteMinigame(stars);
+            return;
+        }
+
+        FailMinigame();
+    }
+
     private void RefreshTexts()
     {
         MinigameDefinition definition = Definition;
@@ -93,70 +112,109 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
 
         if (_titleText != null)
         {
-            _titleText.text = definition.DisplayName;
+            _titleText.text = "북극곰 트랙 질주!";
         }
 
         if (_descriptionText != null)
         {
             _descriptionText.text =
-                $"{definition.Description}\n" +
-                $"목표: {definition.Objective}\n" +
-                $"별: {definition.OneStarTargetCount}/{definition.TwoStarTargetCount}/{definition.ThreeStarTargetCount}회\n" +
-                $"조작: {definition.ControlGuide}";
+                "F키를 빠르게 연타해 결승선을 향해 달리세요!\n" +
+                $"{definition.OneStarTargetCount} / {definition.TwoStarTargetCount} / {definition.ThreeStarTargetCount}회 = 1 / 2 / 3성";
         }
 
+        float distance = GetRunnerProgress01() * definition.ThreeStarTargetCount * _distancePerMash;
+        float targetDistance = definition.ThreeStarTargetCount * _distancePerMash;
+        int stars = GetDistanceStarGrade(definition);
         if (_progressText != null)
         {
-            int distancePercent = Mathf.RoundToInt(GetTrackProgress01() * 100f);
-            int stars = GetDistanceStarGrade(definition);
-            _progressText.text = $"이동 거리: {distancePercent}%\n별: {stars}/3";
+            _progressText.text = $"거리  {distance:0}m / {targetDistance:0}m\n연타  {_buttonMashCount}회";
+        }
+
+        if (_timerText != null)
+        {
+            _timerText.text = $"남은 시간  {_roundRemainingSeconds:0.0}초";
+        }
+
+        if (_gradeText != null)
+        {
+            _gradeText.text = stars switch
+            {
+                3 => "★★★  완주!",
+                2 => "★★☆  질주 중!",
+                1 => "★☆☆  조금 더!",
+                _ => "☆☆☆  출발!",
+            };
         }
     }
 
-    /// <summary>
-    /// 씬에 배치된 트랙의 현재 위치를 시작점으로 사용합니다.
-    /// </summary>
-    private void ApplySceneTrackStartPosition()
+    private void ResetRunnerAndCamera()
     {
-        if (!_useTrackInitialPositionAsStart || _movingTrackRoot == null)
+        if (_runnerRoot == null)
         {
             return;
         }
 
-        Vector3 travelOffset = _trackFinishPosition - _trackStartPosition;
-        _trackStartPosition = _movingTrackRoot.position;
-        _trackFinishPosition = _trackStartPosition + travelOffset;
-    }
-
-    /// <summary>
-    /// 목표 진행률을 트랙 위치로 변환하고, 필요하면 즉시 이동시킵니다.
-    /// </summary>
-    private void SetTrackProgress(float progress, bool snap)
-    {
-        _targetProgress = Mathf.Clamp01(progress);
-        _targetPosition = Vector3.Lerp(_trackStartPosition, _trackFinishPosition, _targetProgress);
-        if (snap && _movingTrackRoot != null)
+        _runnerStartPosition = _runnerRoot.position;
+        _runnerTargetPosition = _runnerStartPosition;
+        _cameraSwayStrength = 0f;
+        if (_followCamera != null)
         {
-            _movingTrackRoot.position = _targetPosition;
+            _followCamera.position = _runnerStartPosition + _cameraFollowOffset;
+            _followCamera.rotation = Quaternion.Euler(_cameraFollowEulerAngles);
         }
     }
 
-    /// <summary>
-    /// 트랙을 목표 위치까지 부드럽게 이동시킵니다.
-    /// </summary>
-    private void MoveTrack()
+    private void SetRunnerProgress(float progress, bool snap)
     {
-        if (_movingTrackRoot == null)
+        float clampedProgress = Mathf.Clamp01(progress);
+        float maxDistance = Definition != null ? Definition.ThreeStarTargetCount * _distancePerMash : 0f;
+        _runnerTargetPosition = _runnerStartPosition + (Vector3.right * maxDistance * clampedProgress);
+        if (snap && _runnerRoot != null)
+        {
+            _runnerRoot.position = _runnerTargetPosition;
+        }
+    }
+
+    private void MoveRunnerAndCamera()
+    {
+        if (_runnerRoot == null)
         {
             return;
         }
 
-        _movingTrackRoot.position = Vector3.Lerp(_movingTrackRoot.position, _targetPosition, Time.deltaTime * _moveLerpSpeed);
+        _runnerRoot.position = Vector3.Lerp(_runnerRoot.position, _runnerTargetPosition, Time.deltaTime * _moveLerpSpeed);
+        if (_followCamera == null)
+        {
+            return;
+        }
+
+        Vector3 cameraTargetPosition = _runnerRoot.position + _cameraFollowOffset;
+        _followCamera.position = Vector3.Lerp(_followCamera.position, cameraTargetPosition, Time.deltaTime * _cameraLerpSpeed);
+        _followCamera.rotation = Quaternion.Euler(_cameraFollowEulerAngles);
+        ApplyCameraSway();
     }
 
-    /// <summary>
-    /// 현재 연타 횟수를 3성 목표 기준의 0~1 진행률로 변환합니다.
-    /// </summary>
+    private void AddCameraSway()
+    {
+        _cameraSwayStrength = Mathf.Min(1f, _cameraSwayStrength + 0.28f);
+    }
+
+    private void ApplyCameraSway()
+    {
+        if (_cameraSwayStrength <= 0f)
+        {
+            return;
+        }
+
+        float smoothStrength = Mathf.SmoothStep(0f, 1f, _cameraSwayStrength);
+        float phase = Time.time * 5.5f;
+        float horizontal = Mathf.Sin(phase) * _cameraSwayPositionAmount * smoothStrength;
+        float vertical = Mathf.Cos(phase * 0.7f) * _cameraSwayPositionAmount * 0.35f * smoothStrength;
+        _followCamera.position += (_followCamera.right * horizontal) + (_followCamera.up * vertical);
+        _followCamera.rotation *= Quaternion.Euler(-vertical * _cameraSwayRotationAmount * 8f, horizontal * _cameraSwayRotationAmount * 7f, 0f);
+        _cameraSwayStrength = Mathf.MoveTowards(_cameraSwayStrength, 0f, _cameraSwayDecaySpeed * Time.deltaTime);
+    }
+
     private float GetProgress01(MinigameDefinition definition)
     {
         if (definition == null || definition.ThreeStarTargetCount <= 0)
@@ -167,30 +225,22 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
         return _buttonMashCount / (float)definition.ThreeStarTargetCount;
     }
 
-    /// <summary>
-    /// 실제 트랙 위치를 기준으로 현재 이동 진행률을 계산합니다.
-    /// </summary>
-    private float GetTrackProgress01()
+    private float GetRunnerProgress01()
     {
-        if (_movingTrackRoot == null)
+        if (_runnerRoot == null || Definition == null)
         {
-            return _targetProgress;
+            return GetProgress01(Definition);
         }
 
-        Vector3 travel = _trackFinishPosition - _trackStartPosition;
-        float travelSqrMagnitude = travel.sqrMagnitude;
-        if (travelSqrMagnitude <= 0.001f)
+        float maxDistance = Definition.ThreeStarTargetCount * _distancePerMash;
+        if (maxDistance <= 0.001f)
         {
             return 0f;
         }
 
-        float projectedDistance = Vector3.Dot(_movingTrackRoot.position - _trackStartPosition, travel) / travelSqrMagnitude;
-        return Mathf.Clamp01(projectedDistance);
+        return Mathf.Clamp01(Vector3.Dot(_runnerRoot.position - _runnerStartPosition, Vector3.right) / maxDistance);
     }
 
-    /// <summary>
-    /// 현재 이동 진행률을 미니게임 정의의 별 목표값과 비교해 별 등급을 계산합니다.
-    /// </summary>
     private int GetDistanceStarGrade(MinigameDefinition definition)
     {
         if (definition == null || definition.ThreeStarTargetCount <= 0)
@@ -198,10 +248,9 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
             return 0;
         }
 
-        float progress = GetTrackProgress01();
+        float progress = GetRunnerProgress01();
         float oneStarProgress = definition.OneStarTargetCount / (float)definition.ThreeStarTargetCount;
         float twoStarProgress = definition.TwoStarTargetCount / (float)definition.ThreeStarTargetCount;
-
         if (progress >= 1f)
         {
             return 3;
@@ -212,17 +261,9 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
             return 2;
         }
 
-        if (progress >= oneStarProgress)
-        {
-            return 1;
-        }
-
-        return 0;
+        return progress >= oneStarProgress ? 1 : 0;
     }
 
-    /// <summary>
-    /// 임시 완료 버튼의 표시 여부를 바꿉니다.
-    /// </summary>
     private void SetCompleteButtonActive(bool active)
     {
         if (_completeButton != null)
@@ -230,5 +271,4 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
             _completeButton.gameObject.SetActive(active);
         }
     }
-
 }
