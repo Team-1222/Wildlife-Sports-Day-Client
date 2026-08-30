@@ -38,6 +38,7 @@ public static class KeyboardMashPolarBearSceneBuilder
         Camera camera = CreateCamera();
         CreateLighting();
         CreateEnvironment(materials);
+        CreateBackgroundDecorator(materials);
         Transform runner = CreateRunner(materials);
         KeyboardMashPolarBearController controller = CreateController(runner, camera.transform);
         CreateHud(camera, controller, font, roundedSprite);
@@ -227,6 +228,18 @@ public static class KeyboardMashPolarBearSceneBuilder
         GameObject runner = CreatePrimitive(PrimitiveType.Capsule, "Polar Bear Placeholder", null, new Vector3(0f, 1.15f, 0f), new Vector3(1.8f, 1.25f, 1.25f), materials.PolarBear);
         runner.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
         return runner.transform;
+    }
+
+    private static void CreateBackgroundDecorator(MaterialLibrary materials)
+    {
+        GameObject decoratorObject = new("Background Decorator");
+        KeyboardMashPolarBearBackgroundDecorator decorator = decoratorObject.AddComponent<KeyboardMashPolarBearBackgroundDecorator>();
+        SerializedObject serialized = new(decorator);
+        serialized.FindProperty("_grassMaterial").objectReferenceValue = materials.Grass;
+        serialized.FindProperty("_markerMaterial").objectReferenceValue = materials.Marker;
+        serialized.FindProperty("_metalMaterial").objectReferenceValue = materials.Metal;
+        serialized.FindProperty("_lightMaterial").objectReferenceValue = materials.Lane;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static KeyboardMashPolarBearController CreateController(Transform runner, Transform cameraTransform)
