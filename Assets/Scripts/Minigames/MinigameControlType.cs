@@ -6,4 +6,9 @@ public enum MinigameControlType
     SequenceInput,
     HoldBalance,
     AvoidObjects,
+    Movement,
+    Rhythm,
+    Aim,
+    Drag,
+    Puzzle,
 }

@@ -32,6 +32,11 @@ public sealed class MinigameDefinition : ScriptableObject
     [SerializeField, Min(0)] private int _twoStarScore = 60;
     [SerializeField, Min(0)] private int _threeStarScore = 100;
 
+#if UNITY_EDITOR
+    [Header("에디터 참조")]
+    [SerializeField] private UnityEditor.SceneAsset _sceneAsset;
+#endif
+
     [Header("표시 에셋")]
     [SerializeField] private Sprite _titleImage;
     [SerializeField] private Sprite _previewImage;
@@ -56,6 +61,10 @@ public sealed class MinigameDefinition : ScriptableObject
     public int ThreeStarScore => _threeStarScore;
     public Sprite TitleImage => _titleImage;
     public Sprite PreviewImage => _previewImage;
+
+#if UNITY_EDITOR
+    public UnityEditor.SceneAsset SceneAsset => _sceneAsset;
+#endif
 
     public string DisplayName => string.IsNullOrWhiteSpace(_minigameName) ? name : _minigameName;
     public string DifficultyLabel => _difficulty switch

@@ -257,20 +257,21 @@ public static class MinigameSelectionSceneBuilder
 
     private static void ConfigureBuildSettings()
     {
-        string[] paths =
+        List<string> paths = new()
         {
             "Assets/Scenes/LoginScene.unity",
             "Assets/Scenes/MainScene.unity",
             ScenePath,
-            "Assets/Scenes/Minigames/Minigame_KeyboardMashPolarBear.unity",
-            "Assets/Scenes/Minigames/Minigame_EscapeMazeSnake.unity",
-            "Assets/Scenes/Minigames/Minigame_DodgeElephant.unity",
-            "Assets/Scenes/Minigames/Minigame_BalanceFlamingo.unity",
-            "Assets/Scenes/Minigames/Minigame_RobotProofCheck.unity",
         };
 
-        List<EditorBuildSettingsScene> scenes = new(paths.Length);
-        for (int i = 0; i < paths.Length; i++)
+        List<SceneAsset> minigameScenes = MinigameDefinitionSceneReferenceUtility.GetReferencedScenes();
+        for (int i = 0; i < minigameScenes.Count; i++)
+        {
+            paths.Add(AssetDatabase.GetAssetPath(minigameScenes[i]));
+        }
+
+        List<EditorBuildSettingsScene> scenes = new(paths.Count);
+        for (int i = 0; i < paths.Count; i++)
         {
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(paths[i]) != null)
             {
