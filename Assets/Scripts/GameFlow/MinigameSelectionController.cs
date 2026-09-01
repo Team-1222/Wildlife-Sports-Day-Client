@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public sealed class MinigameSelectionController : MonoBehaviour
 {
+    [SerializeField] private MinigameCatalog _minigameCatalog;
     [SerializeField] private RectTransform _cardTrack;
     [SerializeField] private MinigameSelectionCard[] _cards;
     [SerializeField, Min(0.1f)] private float _spinDurationSeconds = 4f;
@@ -30,14 +31,14 @@ public sealed class MinigameSelectionController : MonoBehaviour
             return;
         }
 
-        if (!GameLoopSession.TrySelectRandomMinigame(out _selectedDefinition))
+        if (_minigameCatalog == null || !GameLoopSession.TrySelectRandomMinigame(_minigameCatalog.Definitions, out _selectedDefinition))
         {
             GameLoopSession.RequestResult();
             LoadResultScene();
             return;
         }
 
-        CollectAvailableDefinitions();
+        CollectAvailableDefinitions(_minigameCatalog.Definitions);
         if (_availableDefinitions.Count == 0 || _cards == null || _cards.Length == 0 || _cardTrack == null)
         {
             GameLoopSession.RequestResult();
@@ -50,13 +51,12 @@ public sealed class MinigameSelectionController : MonoBehaviour
     }
 
     /// <summary>
-    /// Resources에 등록된 모든 미니게임 정의를 카드 연출용으로 수집합니다.
+    /// 카탈로그에 등록된 모든 미니게임 정의를 카드 연출용으로 수집합니다.
     /// </summary>
-    private void CollectAvailableDefinitions()
+    private void CollectAvailableDefinitions(IReadOnlyList<MinigameDefinition> definitions)
     {
         _availableDefinitions.Clear();
-        MinigameDefinition[] definitions = Resources.LoadAll<MinigameDefinition>("Minigames");
-        for (int i = 0; i < definitions.Length; i++)
+        for (int i = 0; i < definitions.Count; i++)
         {
             MinigameDefinition definition = definitions[i];
             if (definition != null && !string.IsNullOrWhiteSpace(definition.SceneName))

@@ -11,8 +11,6 @@ public static class GameLoopSession
     public const string ResultSceneName = "MainScene";
 
     private const float DefaultDurationSeconds = 120f;
-    private const string MinigameResourcePath = "Minigames";
-
     private static int _lastTickFrame = -1;
 
     public static bool IsActive { get; private set; }
@@ -177,10 +175,10 @@ public static class GameLoopSession
     /// <summary>
     /// 카드 선택 연출에서 사용할 다음 랜덤 미니게임을 하나 확정합니다.
     /// </summary>
-    public static bool TrySelectRandomMinigame(out MinigameDefinition selectedDefinition)
+    public static bool TrySelectRandomMinigame(IReadOnlyList<MinigameDefinition> definitions, out MinigameDefinition selectedDefinition)
     {
         selectedDefinition = null;
-        if (!IsActive || IsResultRequested || !SelectNextRandomMinigame())
+        if (!IsActive || IsResultRequested || !SelectNextRandomMinigame(definitions))
         {
             return false;
         }
@@ -228,18 +226,17 @@ public static class GameLoopSession
     }
 
     /// <summary>
-    /// Resources의 미니게임 정의 중 하나를 랜덤으로 선택합니다.
+    /// 카탈로그에 등록된 미니게임 정의 중 하나를 랜덤으로 선택합니다.
     /// </summary>
-    private static bool SelectNextRandomMinigame()
+    private static bool SelectNextRandomMinigame(IReadOnlyList<MinigameDefinition> definitions)
     {
-        MinigameDefinition[] definitions = Resources.LoadAll<MinigameDefinition>(MinigameResourcePath);
-        if (definitions == null || definitions.Length <= 0)
+        if (definitions == null || definitions.Count <= 0)
         {
             return false;
         }
 
-        List<MinigameDefinition> pool = new(definitions.Length);
-        for (int i = 0; i < definitions.Length; i++)
+        List<MinigameDefinition> pool = new(definitions.Count);
+        for (int i = 0; i < definitions.Count; i++)
         {
             if (definitions[i] != null &&
                 definitions[i].IsRandomSelectionEnabled &&

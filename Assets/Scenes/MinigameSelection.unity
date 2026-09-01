@@ -5126,6 +5126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b34ec4ca274804448a2f6469baea68e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _minigameCatalog: {fileID: 11400000, guid: 47bf833618e44a2f9179039d2b922688, type: 2}
   _cardTrack: {fileID: 1721515887}
   _cards:
   - {fileID: 243076922}
