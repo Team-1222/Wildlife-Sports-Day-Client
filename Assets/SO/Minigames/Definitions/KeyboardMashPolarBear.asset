@@ -22,6 +22,7 @@ MonoBehaviour:
   _characterType: 1
   _controlType: 1
   _difficulty: 0
+  _developmentStatus: 2
   _isRandomSelectionEnabled: 1
   _score: 300
   _targetCount: 20
