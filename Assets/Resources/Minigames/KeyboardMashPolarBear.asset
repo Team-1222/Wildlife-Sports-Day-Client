@@ -32,5 +32,6 @@ MonoBehaviour:
   _oneStarScore: 100
   _twoStarScore: 200
   _threeStarScore: 300
+  _sceneAsset: {fileID: 102900000, guid: d5337346dbc746e99f905a4a8691d5e2, type: 3}
   _titleImage: {fileID: 0}
   _previewImage: {fileID: 0}

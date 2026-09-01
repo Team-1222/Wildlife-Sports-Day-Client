@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34d7c11ae05e41649c8d95ffc0abb61a, type: 3}
+  m_Name: ShapeBeaver
+  m_EditorClassIdentifier: 
+  _minigameName: "\uBAA8\uC591\uC744 \uB530\uB77C \uB9CC\uB4DC\uC138\uC694"
+  _description: "\uBE44\uBC84\uAC00 \uC7A0\uAE50 \uBCF8 \uBAA9\uD45C \uC870\uD615\uBB3C\uC744
+    \uC81C\uD55C\uB41C \uC870\uAC01\uC73C\uB85C \uC7AC\uAD6C\uC131\uD558\uB294 \uAD00\uCC30
+    \uD37C\uC990\uC785\uB2C8\uB2E4."
+  _objective: "\uC81C\uD55C \uC2DC\uAC04 \uC548\uC5D0 \uBAA9\uD45C \uBAA8\uC591 \uC644\uC131\uD558\uAE30"
+  _controlGuide: "\uC870\uAC01 \uB4DC\uB798\uADF8\uC640 \uD68C\uC804"
+  _viewType: 1
+  _characterType: 17
+  _controlType: 10
+  _difficulty: 1
+  _isRandomSelectionEnabled: 0
+  _score: 300
+  _targetCount: 1
+  _sceneName: Minigame_ShapeBeaver
+  _oneStarTargetCount: 1
+  _twoStarTargetCount: 2
+  _threeStarTargetCount: 3
+  _oneStarScore: 100
+  _twoStarScore: 200
+  _threeStarScore: 300
+  _sceneAsset: {fileID: 102900000, guid: ed5e1c78096bf694baf1682d0d5ab914, type: 3}
+  _titleImage: {fileID: 0}
+  _previewImage: {fileID: 0}

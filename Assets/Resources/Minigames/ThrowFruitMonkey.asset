@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34d7c11ae05e41649c8d95ffc0abb61a, type: 3}
+  m_Name: ThrowFruitMonkey
+  m_EditorClassIdentifier: 
+  _minigameName: "\uC5F4\uB9E4\uB97C \uB358\uC9C0\uC138\uC694"
+  _description: "\uC6D0\uC22D\uC774\uAC00 \uB098\uBB34 \uC704\uC5D0\uC11C \uB0A0\uC544\uB2E4\uB2C8\uB294
+    \uD45C\uC801\uC744 \uD5A5\uD574 \uC5F4\uB9E4\uB97C \uB358\uC9C0\uB294 \uC870\uC900
+    \uAC8C\uC784\uC785\uB2C8\uB2E4."
+  _objective: "\uC81C\uD55C \uC2DC\uAC04 \uC548\uC5D0 \uBAA9\uD45C \uC810\uC218\uB9CC\uD07C
+    \uD45C\uC801 \uB9DE\uD788\uAE30"
+  _controlGuide: "\uB9C8\uC6B0\uC2A4 \uC870\uC900\uACFC \uD074\uB9AD"
+  _viewType: 0
+  _characterType: 23
+  _controlType: 8
+  _difficulty: 1
+  _isRandomSelectionEnabled: 0
+  _score: 300
+  _targetCount: 1
+  _sceneName: Minigame_ThrowFruitMonkey
+  _oneStarTargetCount: 1
+  _twoStarTargetCount: 2
+  _threeStarTargetCount: 3
+  _oneStarScore: 100
+  _twoStarScore: 200
+  _threeStarScore: 300
+  _sceneAsset: {fileID: 102900000, guid: 1ba05e2ecb2c8964e8b81bfa870df1d8, type: 3}
+  _titleImage: {fileID: 0}
+  _previewImage: {fileID: 0}
