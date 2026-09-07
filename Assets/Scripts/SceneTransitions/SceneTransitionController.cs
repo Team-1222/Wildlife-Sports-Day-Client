@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -9,8 +11,7 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class SceneTransitionController : MonoBehaviour
 {
-    private const string ShaderName = "Wildlife/UI/SceneTransitionIrisNoise";
-    private const string MaterialResourcePath = "UI/SceneTransitionIrisNoiseMaterial";
+    private const string MaterialAddress = "UI/SceneTransitionIrisNoiseMaterial";
     private const string ProgressProperty = "_Progress";
 
     private static SceneTransitionController _instance;
@@ -23,6 +24,9 @@ public sealed class SceneTransitionController : MonoBehaviour
 
     private Material _material;
     private CanvasGroup _canvasGroup;
+    private Image _transitionImage;
+    private AsyncOperationHandle<Material> _materialLoadHandle;
+    private bool _isMaterialLoading;
     private bool _isTransitioning;
 
     public static bool IsTransitioning => _instance != null && _instance._isTransitioning;
@@ -76,6 +80,11 @@ public sealed class SceneTransitionController : MonoBehaviour
         {
             Destroy(_material);
         }
+
+        if (_materialLoadHandle.IsValid())
+        {
+            Addressables.Release(_materialLoadHandle);
+        }
     }
 
     private void StartLoad(string sceneName, LoadSceneMode mode)
@@ -91,6 +100,7 @@ public sealed class SceneTransitionController : MonoBehaviour
     private IEnumerator LoadSceneRoutine(string sceneName, LoadSceneMode mode)
     {
         _isTransitioning = true;
+        yield return EnsureMaterialLoaded();
         SetVisible(true);
 
         yield return AnimateProgress(0f, 1f, _fadeOutSeconds);
@@ -184,38 +194,47 @@ public sealed class SceneTransitionController : MonoBehaviour
         rectTransform.offsetMin = Vector2.zero;
         rectTransform.offsetMax = Vector2.zero;
 
-        Image image = imageObject.AddComponent<Image>();
-        image.raycastTarget = true;
-        image.color = Color.white;
-        image.material = CreateMaterial();
+        _transitionImage = imageObject.AddComponent<Image>();
+        _transitionImage.raycastTarget = true;
+        _transitionImage.color = Color.white;
     }
 
-    private Material CreateMaterial()
+    /// <summary>
+    /// Addressables의 전환 머티리얼을 로드하고 오버레이 이미지에 런타임 복제본을 적용합니다.
+    /// </summary>
+    private IEnumerator EnsureMaterialLoaded()
     {
-        Material materialAsset = Resources.Load<Material>(MaterialResourcePath);
-        if (materialAsset != null)
+        if (_material != null)
         {
-            _material = new Material(materialAsset)
-            {
-                name = "SceneTransitionIrisNoiseRuntime"
-            };
-
-            return _material;
+            yield break;
         }
 
-        Shader shader = Shader.Find(ShaderName);
-        if (shader == null)
+        if (!_isMaterialLoading)
         {
-            Debug.LogError($"Scene transition material not found at Resources/{MaterialResourcePath}, and shader not found: {ShaderName}");
-            return null;
+            _isMaterialLoading = true;
+            _materialLoadHandle = Addressables.LoadAssetAsync<Material>(MaterialAddress);
         }
 
-        _material = new Material(shader)
+        yield return _materialLoadHandle;
+        _isMaterialLoading = false;
+
+        if (_materialLoadHandle.Status != AsyncOperationStatus.Succeeded || _materialLoadHandle.Result == null)
+        {
+            Debug.LogError($"Addressable scene transition material not found: {MaterialAddress}");
+            yield break;
+        }
+
+        _material = new Material(_materialLoadHandle.Result)
         {
             name = "SceneTransitionIrisNoiseRuntime"
         };
 
-        return _material;
+        if (_transitionImage != null)
+        {
+            _transitionImage.material = _material;
+        }
+
+        SetProgress(0f);
     }
 
     private void SetProgress(float progress)

@@ -1,5 +1,7 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
 
 /// <summary>
@@ -8,10 +10,12 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public sealed class GameHudController : MonoBehaviour
 {
-    private const string HudPrefabResourcePath = "UI/GameHudCanvas";
+    private const string HudPrefabAddress = "UI/GameHudCanvas";
 
     private static GameHudController _instance;
     private static bool _isShowAfterSceneLoadRegistered;
+    private static AsyncOperationHandle<GameObject> _hudPrefabLoadHandle;
+    private static bool _isHudPrefabLoading;
 
     [SerializeField] private TMP_Text _scoreValueText;
     [SerializeField] private TMP_Text _timerValueText;
@@ -114,7 +118,7 @@ public sealed class GameHudController : MonoBehaviour
     }
 
     /// <summary>
-    /// Resources 폴더의 HUD 프리팹을 로드해 인스턴스를 만듭니다.
+    /// Addressables에 등록된 HUD 프리팹을 로드해 인스턴스를 만듭니다.
     /// </summary>
     private static void EnsureInstance()
     {
@@ -123,14 +127,54 @@ public sealed class GameHudController : MonoBehaviour
             return;
         }
 
-        GameHudController prefab = Resources.Load<GameHudController>(HudPrefabResourcePath);
-        if (prefab == null)
+        if (_hudPrefabLoadHandle.IsValid() && _hudPrefabLoadHandle.Status == AsyncOperationStatus.Succeeded)
         {
-            Debug.LogError($"Game HUD prefab not found at Resources/{HudPrefabResourcePath}.");
+            CreateInstance(_hudPrefabLoadHandle.Result);
             return;
         }
 
-        Instantiate(prefab);
+        if (_isHudPrefabLoading)
+        {
+            return;
+        }
+
+        _isHudPrefabLoading = true;
+        _hudPrefabLoadHandle = Addressables.LoadAssetAsync<GameObject>(HudPrefabAddress);
+        _hudPrefabLoadHandle.Completed += HandleHudPrefabLoaded;
+    }
+
+    /// <summary>
+    /// HUD 프리팹 로드가 끝난 뒤 현재 게임 런이 유효하면 인스턴스를 만듭니다.
+    /// </summary>
+    private static void HandleHudPrefabLoaded(AsyncOperationHandle<GameObject> handle)
+    {
+        _isHudPrefabLoading = false;
+
+        if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
+        {
+            Debug.LogError($"Addressable Game HUD prefab not found: {HudPrefabAddress}");
+            return;
+        }
+
+        if (_instance == null && GameLoopSession.IsActive && !GameLoopSession.IsResultRequested)
+        {
+            CreateInstance(handle.Result);
+        }
+    }
+
+    /// <summary>
+    /// 로드된 프리팹 루트에서 HUD 컨트롤러를 찾아 인스턴스를 만듭니다.
+    /// </summary>
+    private static void CreateInstance(GameObject prefab)
+    {
+        GameHudController controller = prefab.GetComponent<GameHudController>();
+        if (controller == null)
+        {
+            Debug.LogError($"Addressable Game HUD prefab has no {nameof(GameHudController)}: {HudPrefabAddress}");
+            return;
+        }
+
+        Instantiate(controller);
     }
 
     /// <summary>

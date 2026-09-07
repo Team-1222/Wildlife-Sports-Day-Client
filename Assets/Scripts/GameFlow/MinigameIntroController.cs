@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 /// <summary>
 /// 미니게임 씬 진입 직후 잠시 표시되는 공통 인트로 패널을 제어합니다.
@@ -8,7 +11,12 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class MinigameIntroController : MonoBehaviour
 {
-    private const string IntroPrefabResourcePath = "UI/MinigameIntroCanvas";
+    private const string IntroPrefabAddress = "UI/MinigameIntroCanvas";
+
+    private static readonly List<Action> PendingClosedCallbacks = new();
+
+    private static AsyncOperationHandle<GameObject> _introPrefabLoadHandle;
+    private static bool _isIntroPrefabLoading;
 
     [SerializeField, Min(0f)] private float _durationSeconds = 1.5f;
     [SerializeField] private TMP_Text _mainText;
@@ -20,20 +28,83 @@ public sealed class MinigameIntroController : MonoBehaviour
     private bool _isClosed;
 
     /// <summary>
-    /// 인트로 프리팹을 생성하고 닫힐 때 호출할 콜백을 등록합니다.
+    /// Addressables에 등록된 인트로 프리팹을 생성하고 닫힐 때 호출할 콜백을 등록합니다.
     /// </summary>
     public static void Show(Action closed)
     {
-        MinigameIntroController prefab = Resources.Load<MinigameIntroController>(IntroPrefabResourcePath);
+        if (_introPrefabLoadHandle.IsValid() && _introPrefabLoadHandle.Status == AsyncOperationStatus.Succeeded)
+        {
+            CreateInstance(_introPrefabLoadHandle.Result, closed);
+            return;
+        }
+
+        PendingClosedCallbacks.Add(closed);
+        if (_isIntroPrefabLoading)
+        {
+            return;
+        }
+
+        _isIntroPrefabLoading = true;
+        _introPrefabLoadHandle = Addressables.LoadAssetAsync<GameObject>(IntroPrefabAddress);
+        _introPrefabLoadHandle.Completed += HandleIntroPrefabLoaded;
+    }
+
+    /// <summary>
+    /// 인트로 프리팹 로드가 끝나면 대기 중인 표시 요청을 처리합니다.
+    /// </summary>
+    private static void HandleIntroPrefabLoaded(AsyncOperationHandle<GameObject> handle)
+    {
+        _isIntroPrefabLoading = false;
+
+        if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
+        {
+            Debug.LogError($"Addressable minigame intro prefab not found: {IntroPrefabAddress}");
+            InvokePendingClosedCallbacks();
+            return;
+        }
+
+        foreach (Action closed in PendingClosedCallbacks)
+        {
+            CreateInstance(handle.Result, closed);
+        }
+
+        PendingClosedCallbacks.Clear();
+    }
+
+    /// <summary>
+    /// 로드된 프리팹으로 인트로 인스턴스를 생성합니다.
+    /// </summary>
+    private static void CreateInstance(GameObject prefab, Action closed)
+    {
         if (prefab == null)
         {
-            Debug.LogError($"Minigame intro prefab not found at Resources/{IntroPrefabResourcePath}.");
             closed?.Invoke();
             return;
         }
 
-        MinigameIntroController instance = Instantiate(prefab);
+        MinigameIntroController controller = prefab.GetComponent<MinigameIntroController>();
+        if (controller == null)
+        {
+            Debug.LogError($"Addressable minigame intro prefab has no {nameof(MinigameIntroController)}: {IntroPrefabAddress}");
+            closed?.Invoke();
+            return;
+        }
+
+        MinigameIntroController instance = Instantiate(controller);
         instance.Initialize(closed);
+    }
+
+    /// <summary>
+    /// 프리팹 로드에 실패했을 때 대기 중인 흐름을 멈추지 않게 합니다.
+    /// </summary>
+    private static void InvokePendingClosedCallbacks()
+    {
+        foreach (Action closed in PendingClosedCallbacks)
+        {
+            closed?.Invoke();
+        }
+
+        PendingClosedCallbacks.Clear();
     }
 
     /// <summary>
