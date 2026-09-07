@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34d7c11ae05e41649c8d95ffc0abb61a, type: 3}
   m_Name: KeyboardMashPolarBear
   m_EditorClassIdentifier: 
-  _minigameName: "\uBD81\uADF9\uACF0 \uD2B8\uB799 \uC9C8\uC8FC!"
+  _minigameName: "\uBE68\uB9AC \uB2EC\uB9AC\uC138\uC694"
   _description: "F\uD0A4\uB97C \uC5F0\uD0C0\uD574 \uBD81\uADF9\uACF0\uC744 \uD2B8\uB799
     \uB05D\uAE4C\uC9C0 \uB2EC\uB9AC\uAC8C \uD558\uC138\uC694."
   _objective: "6\uCD08 \uC548\uC5D0 F\uD0A4\uB97C \uB9CE\uC774 \uB20C\uB7EC \uB354

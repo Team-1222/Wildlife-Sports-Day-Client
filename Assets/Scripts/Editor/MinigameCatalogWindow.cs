@@ -3,15 +3,18 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// 미니게임 정의의 상태와 씬 등록 상태를 한 화면에서 관리합니다.
+/// 미니게임 정의의 씬 연결과 빌드 등록 상태를 한 화면에서 확인합니다.
 /// </summary>
 public sealed class MinigameCatalogWindow : EditorWindow
 {
+    private const float RowHeight = 34f;
+    private const float RowSpacing = 1f;
+
     private string _searchText = string.Empty;
-    private bool _showAllStatuses = true;
-    private bool _showOnlyIssues;
-    private MinigameDevelopmentStatus _statusFilter;
     private Vector2 _scrollPosition;
+
+    private static GUIStyle _rowTitleStyle;
+    private static GUIStyle _rowIdentifierStyle;
 
     [MenuItem("Tools/Minigame Catalog")]
     private static void Open()
@@ -23,6 +26,8 @@ public sealed class MinigameCatalogWindow : EditorWindow
 
     private void OnGUI()
     {
+        EnsureStyles();
+
         MinigameCatalog catalog = FindCatalog();
         if (catalog == null)
         {
@@ -31,21 +36,13 @@ public sealed class MinigameCatalogWindow : EditorWindow
         }
 
         DrawFilters();
-        DrawSummary(catalog);
         DrawDefinitions(catalog);
     }
 
     private void DrawFilters()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        _searchText = GUILayout.TextField(_searchText, EditorStyles.toolbarSearchField, GUILayout.MinWidth(180f));
-        _showAllStatuses = GUILayout.Toggle(_showAllStatuses, "전체 상태", EditorStyles.toolbarButton, GUILayout.Width(80f));
-        using (new EditorGUI.DisabledScope(_showAllStatuses))
-        {
-            _statusFilter = (MinigameDevelopmentStatus)EditorGUILayout.EnumPopup(_statusFilter, EditorStyles.toolbarPopup, GUILayout.Width(110f));
-        }
-
-        _showOnlyIssues = GUILayout.Toggle(_showOnlyIssues, "문제만", EditorStyles.toolbarButton, GUILayout.Width(60f));
+        _searchText = GUILayout.TextField(_searchText, EditorStyles.toolbarSearchField, GUILayout.MinWidth(220f));
         GUILayout.FlexibleSpace();
         if (GUILayout.Button("새로고침", EditorStyles.toolbarButton, GUILayout.Width(60f)))
         {
@@ -55,44 +52,10 @@ public sealed class MinigameCatalogWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
     }
 
-    private static void DrawSummary(MinigameCatalog catalog)
-    {
-        int planningCount = 0;
-        int scaffoldedCount = 0;
-        int playableCount = 0;
-        int completeCount = 0;
-
-        for (int i = 0; i < catalog.Definitions.Count; i++)
-        {
-            MinigameDefinition definition = catalog.Definitions[i];
-            if (definition == null)
-            {
-                continue;
-            }
-
-            switch (definition.DevelopmentStatus)
-            {
-                case MinigameDevelopmentStatus.Planning:
-                    planningCount++;
-                    break;
-                case MinigameDevelopmentStatus.Scaffolded:
-                    scaffoldedCount++;
-                    break;
-                case MinigameDevelopmentStatus.Playable:
-                    playableCount++;
-                    break;
-                case MinigameDevelopmentStatus.Complete:
-                    completeCount++;
-                    break;
-            }
-        }
-
-        EditorGUILayout.HelpBox($"전체 {catalog.Definitions.Count}개  |  기획 {planningCount}  |  틀 {scaffoldedCount}  |  플레이 가능 {playableCount}  |  완료 {completeCount}", MessageType.Info);
-    }
-
     private void DrawDefinitions(MinigameCatalog catalog)
     {
         _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+        int visibleIndex = 0;
         for (int i = 0; i < catalog.Definitions.Count; i++)
         {
             MinigameDefinition definition = catalog.Definitions[i];
@@ -101,7 +64,8 @@ public sealed class MinigameCatalogWindow : EditorWindow
                 continue;
             }
 
-            DrawDefinition(definition);
+            DrawDefinition(definition, visibleIndex);
+            visibleIndex++;
         }
 
         EditorGUILayout.EndScrollView();
@@ -116,37 +80,31 @@ public sealed class MinigameCatalogWindow : EditorWindow
             return false;
         }
 
-        if (!_showAllStatuses && definition.DevelopmentStatus != _statusFilter)
-        {
-            return false;
-        }
-
-        return !_showOnlyIssues || !HasIssue(definition);
+        return true;
     }
 
-    private static void DrawDefinition(MinigameDefinition definition)
+    private static void DrawDefinition(MinigameDefinition definition, int visibleIndex)
     {
-        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(definition.DisplayName, EditorStyles.boldLabel);
-        GUILayout.FlexibleSpace();
-
-        MinigameDevelopmentStatus status = (MinigameDevelopmentStatus)EditorGUILayout.EnumPopup(definition.DevelopmentStatus, GUILayout.Width(120f));
-        if (status != definition.DevelopmentStatus)
-        {
-            SetDevelopmentStatus(definition, status);
-        }
-
-        EditorGUILayout.EndHorizontal();
-
         string scenePath = definition.SceneAsset == null ? string.Empty : AssetDatabase.GetAssetPath(definition.SceneAsset);
-        bool isInBuildSettings = IsInBuildSettings(scenePath);
-        EditorGUILayout.LabelField("SO", AssetDatabase.GetAssetPath(definition));
-        EditorGUILayout.LabelField("씬", string.IsNullOrEmpty(scenePath) ? "미지정" : scenePath);
-        EditorGUILayout.LabelField("빌드 설정", isInBuildSettings ? "등록됨" : "미등록");
+        Rect rowRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(RowHeight), GUILayout.ExpandWidth(true));
+        EditorGUI.DrawRect(rowRect, GetRowBackgroundColor(visibleIndex));
 
-        EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("SO 선택"))
+        const float HorizontalInset = 10f;
+        const float ActionButtonWidth = 42f;
+        const float ButtonSpacing = 4f;
+        float identifierWidth = Mathf.Clamp(rowRect.width * 0.28f, 130f, 240f);
+        float titleWidth = rowRect.width - (HorizontalInset * 2f) - identifierWidth - (ActionButtonWidth * 2f) - (ButtonSpacing * 2f);
+
+        Rect titleRect = new(rowRect.x + HorizontalInset, rowRect.y, titleWidth, rowRect.height);
+        Rect identifierRect = new(titleRect.xMax, rowRect.y, identifierWidth, rowRect.height);
+        Rect selectButtonRect = new(identifierRect.xMax + ButtonSpacing, rowRect.y + 5f, ActionButtonWidth, rowRect.height - 10f);
+        Rect openButtonRect = new(selectButtonRect.xMax + ButtonSpacing, rowRect.y + 5f, ActionButtonWidth, rowRect.height - 10f);
+
+        string tooltip = $"정의: {AssetDatabase.GetAssetPath(definition)}\n씬: {(string.IsNullOrEmpty(scenePath) ? "미지정" : scenePath)}";
+        GUI.Label(titleRect, new GUIContent(definition.DisplayName, tooltip), _rowTitleStyle);
+        GUI.Label(identifierRect, new GUIContent(definition.name, tooltip), _rowIdentifierStyle);
+
+        if (GUI.Button(selectButtonRect, "SO"))
         {
             Selection.activeObject = definition;
             EditorGUIUtility.PingObject(definition);
@@ -154,47 +112,48 @@ public sealed class MinigameCatalogWindow : EditorWindow
 
         using (new EditorGUI.DisabledScope(definition.SceneAsset == null))
         {
-            if (GUILayout.Button("씬 열기"))
+            if (GUI.Button(openButtonRect, "씬"))
             {
                 AssetDatabase.OpenAsset(definition.SceneAsset);
             }
         }
 
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.EndVertical();
+        GUILayout.Space(RowSpacing);
     }
 
-    private static bool HasIssue(MinigameDefinition definition)
+    private static void EnsureStyles()
     {
-        return definition.SceneAsset == null || !IsInBuildSettings(AssetDatabase.GetAssetPath(definition.SceneAsset));
-    }
-
-    private static bool IsInBuildSettings(string scenePath)
-    {
-        if (string.IsNullOrEmpty(scenePath))
+        if (_rowTitleStyle != null)
         {
-            return false;
+            return;
         }
 
-        EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-        for (int i = 0; i < scenes.Length; i++)
-        {
-            if (string.Equals(scenes[i].path, scenePath, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
+        Color primaryTextColor = EditorGUIUtility.isProSkin ? new Color(0.92f, 0.94f, 0.96f) : new Color(0.15f, 0.17f, 0.2f);
+        Color secondaryTextColor = EditorGUIUtility.isProSkin ? new Color(0.62f, 0.68f, 0.74f) : new Color(0.34f, 0.4f, 0.46f);
 
-        return false;
+        _rowTitleStyle = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 12,
+            clipping = TextClipping.Ellipsis,
+            alignment = TextAnchor.MiddleLeft,
+            normal = { textColor = primaryTextColor },
+        };
+        _rowIdentifierStyle = new GUIStyle(EditorStyles.miniLabel)
+        {
+            clipping = TextClipping.Ellipsis,
+            alignment = TextAnchor.MiddleLeft,
+            normal = { textColor = secondaryTextColor },
+        };
     }
 
-    private static void SetDevelopmentStatus(MinigameDefinition definition, MinigameDevelopmentStatus status)
+    private static Color GetRowBackgroundColor(int visibleIndex)
     {
-        SerializedObject serializedDefinition = new(definition);
-        serializedDefinition.FindProperty("_developmentStatus").enumValueIndex = (int)status;
-        serializedDefinition.ApplyModifiedProperties();
-        EditorUtility.SetDirty(definition);
-        AssetDatabase.SaveAssets();
+        if (EditorGUIUtility.isProSkin)
+        {
+            return visibleIndex % 2 == 0 ? new Color(0.16f, 0.16f, 0.17f) : new Color(0.18f, 0.18f, 0.19f);
+        }
+
+        return visibleIndex % 2 == 0 ? new Color(0.94f, 0.94f, 0.95f) : new Color(0.89f, 0.9f, 0.91f);
     }
 
     private static MinigameCatalog FindCatalog()

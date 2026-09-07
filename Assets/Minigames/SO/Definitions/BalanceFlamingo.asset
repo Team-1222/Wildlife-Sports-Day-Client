@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34d7c11ae05e41649c8d95ffc0abb61a, type: 3}
   m_Name: BalanceFlamingo
   m_EditorClassIdentifier: 
-  _minigameName: "\uD55C \uBC1C\uB85C \uBC84\uD2F0\uC138\uC694"
+  _minigameName: "\uC911\uC2EC\uC744 \uC7A1\uC73C\uC138\uC694"
   _description: "\uC5F0\uBABB\uC5D0\uC11C \uD50C\uB77C\uBC0D\uACE0\uAC00 \uC911\uC2EC\uC744
     \uC7A1\uACE0 \uBC84\uD2F0\uB294 \uBBF8\uB2C8\uAC8C\uC784\uC785\uB2C8\uB2E4."
   _objective: "\uC911\uC2EC\uC744 \uC783\uC9C0 \uC54A\uACE0 \uBC84\uD2F0\uAE30"

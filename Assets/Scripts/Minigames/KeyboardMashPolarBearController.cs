@@ -112,7 +112,7 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
 
         if (_titleText != null)
         {
-            _titleText.text = "북극곰 트랙 질주!";
+            _titleText.text = "빨리 달리세요";
         }
 
         if (_descriptionText != null)
