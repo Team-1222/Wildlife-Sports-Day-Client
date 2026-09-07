@@ -4,21 +4,28 @@
 
 - 현재 기준: 1인 클라이언트 개발 흐름
 - 과한 Git Flow를 강제하지 않는다.
-- 기본은 `main`, `develop` 중심으로 단순하게 운영한다.
-- 작은 작업은 브랜치 없이 `develop`에서 직접 작업 가능하다.
+- 기본은 `main` 중심으로 단순하게 운영한다.
+- 작은 작업은 브랜치 없이 `main`에서 직접 작업 가능하다.
 - 범위가 크거나 되돌릴 가능성이 있으면 작업 브랜치를 만든다.
-- 커밋, PR, 이슈의 상세 절차는 `.codex/skills/*/SKILL.md`를 따른다.
+- 커밋, PR, 이슈의 상세 절차는 `.agents/skills/*/SKILL.md`를 따른다.
+
+## 작업 트리와 브랜치
+
+- 작업 시작 전 현재 브랜치와 `git status`를 확인한다.
+- 현재 worktree에 다른 미커밋 변경이 있으면, 새 작업에 섞거나 되돌리지 않는다.
+- 새 브랜치가 필요한데 현재 worktree가 더러우면, 현재 변경을 포함할지 별도 worktree로 분리할지 사용자에게 확인한다.
+- `merge`, `rebase`, `reset`, 기존 브랜치 삭제는 사용자가 명시적으로 요청한 경우에만 수행한다.
+- PR 병합 뒤에도 브랜치는 자동 삭제하지 않는다. 삭제 요청이 있으면 로컬·원격 대상을 각각 확인한다.
 
 ## 관련 스킬
 
-- `.codex/skills/auto-commit/SKILL.md`: 커밋 생성
-- `.codex/skills/auto-pr/SKILL.md`: PR 생성
-- `.codex/skills/github-issue/SKILL.md`: GitHub 이슈 생성
+- `.agents/skills/auto-commit/SKILL.md`: 커밋 생성
+- `.agents/skills/auto-pr/SKILL.md`: PR 생성
+- `.agents/skills/github-issue/SKILL.md`: GitHub 이슈 생성
 
 ## 브랜치 기준
 
 - `main`: 안정 버전
-- `develop`: 일상 개발 통합
 - `feature/*`: 새로운 기능 구현
 - `fix/*`: 오류 수정
 - `refactor/*`: 동작 변경 없는 코드 구조 개선
@@ -27,8 +34,16 @@
 
 ## 최소 규칙
 
-- 커밋 전 변경 파일을 확인한다.
+- 커밋 전에는 현재 브랜치, 변경 파일, stage 대상, 검증 결과를 확인한다.
+- stage는 `git add -- <파일 목록>`처럼 대상 파일을 명시한다. `git add .` 또는 `git add -A`로 다른 작업 파일을 함께 stage하지 않는다.
 - Unity `.meta` 파일은 대응 원본 파일과 함께 다룬다.
-- 사용자 승인 전에는 커밋, push, PR, 이슈 생성을 하지 않는다.
+- 사용자의 명시 요청은 해당 작업의 승인이다. 같은 작업에 대해 별도 승인 확인을 반복하지 않는다.
+- 커밋 요청은 push나 PR 생성 요청을 포함하지 않으며, PR 요청은 필요한 현재 브랜치 push를 포함한다.
 - PR/이슈 라벨은 현재 GitHub 저장소 라벨 이름과 정확히 맞춘다.
 - 검증하지 못한 항목은 결과 보고에 남긴다.
+
+## PR 전 최신화
+
+- PR 전에는 가능한 경우 `git fetch origin`으로 원격 `main` 기준을 확인하고, `origin/main..HEAD`의 커밋과 diff를 점검한다.
+- 원격 기준을 가져오지 못했으면 그 사실을 PR 본문 또는 결과에 남긴다.
+- `main`의 변경을 반영하기 위한 `merge` 또는 `rebase`는 자동으로 수행하지 않는다. 충돌 가능성만 보고하고 사용자 요청 후 처리한다.

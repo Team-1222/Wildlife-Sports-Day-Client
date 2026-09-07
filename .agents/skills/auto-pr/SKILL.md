@@ -12,7 +12,7 @@ Git 변경사항을 확인하고 GitHub PR을 생성한다. Unity 프로젝트 �
 - PR 제목: `[라벨] 한글 설명`
 - PR 제목 라벨은 저장소에 존재하는 라벨 이름과 정확히 맞춘다.
 - PR 본문 전체는 한글로 작성한다.
-- 사용자 승인 전에는 PR을 생성하지 않는다.
+- 사용자의 명시적인 PR 생성 요청은 PR 생성과 필요한 현재 브랜치 push의 승인이다.
 
 ## 사용 가능한 라벨
 
@@ -43,17 +43,19 @@ Git 변경사항을 확인하고 GitHub PR을 생성한다. Unity 프로젝트 �
 ```bash
 git branch --show-current
 git status
+git fetch origin
 git diff --stat
 git log origin/main..HEAD --oneline
 ```
 
 ### 2단계: 변경사항 분석
 
-- base 브랜치: 보통 `main` 또는 `develop`
+- base 브랜치: 기본은 `main`, 사용자가 다른 base를 명시했을 때만 변경
 - head 브랜치: 현재 작업 브랜치
 - 변경 파일 목록
 - 커밋 메시지와 변경 의도
 - Unity `.meta` 파일은 PR 설명에서 별도 변경점으로 강조하지 않는다.
+- `origin/main` 반영을 위해 merge 또는 rebase가 필요한 경우, 자동 실행하지 않고 사용자 요청을 받는다.
 
 ### 3단계: PR 제목과 라벨 결정
 
@@ -83,9 +85,9 @@ git log origin/main..HEAD --oneline
 # 기타 사항
 ```
 
-### 5단계: 생성 전 확인
+### 5단계: 생성 전 점검
 
-사용자에게 다음을 보여주고 확인받는다.
+다음을 확인한다. 사용자가 PR 생성을 명시적으로 요청한 경우 별도 승인 확인 없이 생성한다.
 
 - Base 브랜치 → Head 브랜치
 - PR 제목
@@ -108,6 +110,7 @@ gh pr create \
 
 - 커밋되지 않은 변경사항 있음: 커밋 여부를 사용자에게 묻기
 - 원격 브랜치 없음: `git push -u origin <branch>` 먼저 실행
+- `git fetch origin` 실패: 최신 `main` 기준을 확인하지 못했음을 PR 본문에 남김
 - 이미 PR 존재: 기존 PR URL 안내
 - 인증 실패: `gh auth login` 안내
 - base와 head가 동일: 브랜치 확인 요청
