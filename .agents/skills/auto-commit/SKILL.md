@@ -35,13 +35,16 @@ description: 현재 변경사항을 기능 단위로 자동 분할하여 커밋�
 | UI / uGUI 스크립트·프리팹 | `UI` |
 | 스크립터블 오브젝트 | `SO` |
 | 미니게임 관련 | `Minigame` |
+| 게임 루프·씬 전환·미니게임 선택 흐름 | `GameFlow` |
 | 저장/기록 시스템 | `Save` |
 | 문서 작업 | `Docs` |
-| 게임 매니저 | `Manager` |
+| 에디터 도구 | `Editor` |
+| 모델·텍스처·스프라이트·일반 프리팹·오디오 등 일반 에셋 | `Asset` |
 | 애니메이션 컨트롤러·클립 | `Anim` |
 | 셰이더·머티리얼 | `Shader` |
 | 빌드·에디터 설정 | `Build` |
 | 외부 패키지·의존성 | `Package` |
+| 기능 변경 없는 Unity 재직렬화·폴더 메타 정리 | `Unity` |
  
 ---
  
@@ -70,6 +73,8 @@ git status
 - 테스트 코드는 대응되는 구현 코드와 같은 그룹으로 묶음
 - `ProjectSettings/` 변경은 별도 `chore(Build)` 그룹으로 분리
 - 씬(`.unity`) 파일은 해당 씬과 관련된 스크립트와 같은 그룹 또는 별도 `Scene` 그룹
+- UI 또는 미니게임 전용 프리팹·에셋은 `Asset`보다 각각 `UI`, `Minigame` scope를 우선한다.
+- `Unity`는 기능 변경이 없는 직렬화·`.meta` 정리에만 사용한다. 기능 변경이 있으면 해당 기능 scope를 사용한다.
  
 **그룹 예시:**
 ```
@@ -110,16 +115,19 @@ git status
 | `perf` | 성능 개선 |
  
 **scope:** Unity 도메인 기준 (위 표 참고). type·scope는 반드시 **영어**로 작성  
-**scope 제한:** 위 표에 없는 scope는 임의로 만들지 않는다. 맞는 scope가 없으면 커밋을 중단하고 사용자에게 어떤 scope를 쓸지 확인한다.
+**scope 제한:** 위 표에 없는 scope는 임의로 만들지 않는다. 기존 scope 중 가장 구체적인 것을 우선하며, 맞는 scope가 없으면 커밋을 중단하고 사용자에게 어떤 scope를 쓸지 확인한다.
 **subject:** 50자 이내, 반드시 **한글**로 작성
  
 **작성 예시:**
 ```
 feat(Minigame): 악어 물기 미니게임 추가
+feat(GameFlow): 미니게임 선택 흐름 추가
 fix(UI): HUD 타이머 표시 오류 수정
 docs(Docs): GitHub 하네스 규칙 정리
 chore(Build): ProjectSettings 빌드 타겟 변경
-refactor(Manager): 게임 매니저 싱글톤 구조 개선
+chore(Asset): 북극곰 모델 에셋 추가
+feat(Editor): 미니게임 카탈로그 관리 창 추가
+chore(Unity): 씬 자동 재직렬화 반영
 ```
 
 **이슈 참조:**
@@ -140,9 +148,9 @@ Closes #123
 - 이슈 번호는 `gh issue list` 로 확인하거나 사용자가 제공한 번호를 사용한다
 - 연관 이슈가 없으면 본문 생략
  
-### 4단계: 커밋 계획 확인
+### 4단계: 커밋 계획 보고
  
-사용자에게 아래 형식으로 전체 계획을 보여주고 **반드시 확인**받는다.
+사용자가 커밋을 명시적으로 요청한 경우, 아래 형식으로 대상 파일과 검증 결과를 보고한 뒤 커밋한다. 사용자 변경을 섞을 위험이 있거나 커밋 분류가 불명확할 때만 진행 전에 확인한다.
  
 ```
 총 N개의 커밋을 생성합니다.
@@ -154,10 +162,9 @@ Closes #123
 [2/N] chore(Build): Unity 빌드 설정 갱신
   - ProjectSettings/ProjectSettings.asset
  
-진행할까요?
 ```
- 
-> **사용자 승인 전에는 절대 커밋하지 않는다.**
+
+> 커밋 요청은 커밋에만 적용된다. push와 PR 생성은 별도 요청이 필요하다.
  
 ### 5단계: 순차 커밋 실행
  
@@ -165,7 +172,11 @@ Closes #123
  
 ```bash
 # 해당 그룹 파일만 stage
-git add <file1> <file2> ...
+git add -- <file1> <file2> ...
+
+# stage 대상과 공백 오류 확인
+git diff --cached --check
+git diff --cached --name-only
  
 # 커밋 (이슈 없음)
 git commit -m "<type>(<scope>): <subject>"

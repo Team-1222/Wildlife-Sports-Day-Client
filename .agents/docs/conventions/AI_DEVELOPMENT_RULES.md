@@ -4,8 +4,8 @@
 
 1. 현재 대화의 직접 프롬프트
 2. `AGENTS.md`
-3. `.codex/docs/conventions/*`
-4. `.codex/docs/planning/*`
+3. `.agents/docs/conventions/*`
+4. `.agents/docs/planning/*`
 5. 기존 프로젝트 구조
 
 ## 기본 원칙

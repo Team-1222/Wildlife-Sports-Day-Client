@@ -19,26 +19,26 @@
 
 1. 현재 대화의 직접 지시
 2. `AGENTS.md`
-3. `.codex/docs/conventions/AI_DEVELOPMENT_RULES.md`
-4. `.codex/docs/conventions/CODING_CONVENTIONS.md`
-5. `.codex/docs/conventions/GITHUB_HARNESS.md`
-6. `.codex/docs/planning/PROJECT_PLAN.md`
-7. `.codex/docs/planning/VISUAL_HARNESS.md`
-8. `.codex/skills/*/SKILL.md` (해당 작업 요청 시)
+3. `.agents/docs/conventions/AI_DEVELOPMENT_RULES.md`
+4. `.agents/docs/conventions/CODING_CONVENTIONS.md`
+5. `.agents/docs/conventions/GITHUB_HARNESS.md`
+6. `.agents/docs/planning/PROJECT_PLAN.md`
+7. `.agents/docs/planning/VISUAL_HARNESS.md`
+8. `.agents/skills/*/SKILL.md` (해당 작업 요청 시)
 
 충돌 시 더 높은 우선순위를 따른다.
 
 ## 문서 맵
 
 - `AGENTS.md`: AI 작업자가 먼저 읽는 진입 문서
-- `.codex/docs/conventions/AI_DEVELOPMENT_RULES.md`: AI 구현/검증/기록 규칙
-- `.codex/docs/conventions/CODING_CONVENTIONS.md`: Unity/C# 코드 스타일
-- `.codex/docs/conventions/GITHUB_HARNESS.md`: 1인 개발 기준 Git 운영 규칙
-- `.codex/docs/planning/PROJECT_PLAN.md`: 현재 상태 기록 중심 작업 문서
-- `.codex/docs/planning/VISUAL_HARNESS.md`: 시각/UI/UX 검수 기준
-- `.codex/skills/auto-commit/SKILL.md`: 자동 커밋 절차
-- `.codex/skills/auto-pr/SKILL.md`: PR 생성 절차
-- `.codex/skills/github-issue/SKILL.md`: GitHub 이슈 생성 절차
+- `.agents/docs/conventions/AI_DEVELOPMENT_RULES.md`: AI 구현/검증/기록 규칙
+- `.agents/docs/conventions/CODING_CONVENTIONS.md`: Unity/C# 코드 스타일
+- `.agents/docs/conventions/GITHUB_HARNESS.md`: 1인 개발 기준 Git 운영 규칙
+- `.agents/docs/planning/PROJECT_PLAN.md`: 현재 상태 기록 중심 작업 문서
+- `.agents/docs/planning/VISUAL_HARNESS.md`: 시각/UI/UX 검수 기준
+- `.agents/skills/auto-commit/SKILL.md`: 자동 커밋 절차
+- `.agents/skills/auto-pr/SKILL.md`: PR 생성 절차
+- `.agents/skills/github-issue/SKILL.md`: GitHub 이슈 생성 절차
 
 ## 현재 확인된 프로젝트 구조
 
@@ -84,10 +84,10 @@
 - `PROJECT_PLAN.md`의 아이디어 메모는 확정 정보로 취급하지 않는다.
 - `PROJECT_PLAN.md`가 사용자 기획으로 갱신된 뒤 필요한 가이드 문서를 다시 보강한다.
   - `AGENTS.md`
-  - `.codex/docs/conventions/AI_DEVELOPMENT_RULES.md`
-  - `.codex/docs/planning/VISUAL_HARNESS.md`
+  - `.agents/docs/conventions/AI_DEVELOPMENT_RULES.md`
+  - `.agents/docs/planning/VISUAL_HARNESS.md`
 - 문서는 장문 설명보다 실무형 규칙과 체크리스트를 우선한다.
-- 커밋, PR, 이슈 관련 규칙이 충돌하면 `.codex/skills` 문서를 우선한다.
+- 커밋, PR, 이슈 관련 규칙이 충돌하면 `.agents/skills` 문서를 우선한다.
 
 ## 작업 완료 전 체크
 
