@@ -6,103 +6,103 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/LoginScene.unity
+    path: Assets/Scenes/GameFlow/LoginScene.unity
     guid: 3b72371799803a1429214559b28183cc
   - enabled: 1
-    path: Assets/Scenes/MainScene.unity
+    path: Assets/Scenes/GameFlow/MainScene.unity
     guid: de7a6d8cab797254d952454ecad49157
   - enabled: 1
-    path: Assets/Scenes/MinigameSelection.unity
+    path: Assets/Scenes/GameFlow/MinigameSelection.unity
     guid: b17d671ec3210ce40b9a58ee23217976
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_AvoidHookSalmon.unity
+    path: Assets/Scenes/Minigames/Minigame_AvoidHookSalmon.unity
     guid: 605beaf8aad501040a291f5596d467b7
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_AvoidPigeonHawk.unity
+    path: Assets/Scenes/Minigames/Minigame_AvoidPigeonHawk.unity
     guid: eaf5983117938624caac894e5a655834
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_BalanceFlamingo.unity
+    path: Assets/Scenes/Minigames/Minigame_BalanceFlamingo.unity
     guid: b6f794e1f59a47d8ace5105a1ea81384
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_BirdStrikePigeon.unity
+    path: Assets/Scenes/Minigames/Minigame_BirdStrikePigeon.unity
     guid: af85e2ff7e34ff5458e1329df06f9b15
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_BiteSalmon.unity
+    path: Assets/Scenes/Minigames/Minigame_BiteSalmon.unity
     guid: 30cc6dde26e8a80468f9c9fa4438c9bd
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_ClimbMountainGoat.unity
+    path: Assets/Scenes/Minigames/Minigame_ClimbMountainGoat.unity
     guid: 418a0e21dfcb439448a8a1eb26378be2
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_CrossRoadCheetah.unity
+    path: Assets/Scenes/Minigames/Minigame_CrossRoadCheetah.unity
     guid: 76396e377df46454485d2de44d42e451
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_DigBadger.unity
+    path: Assets/Scenes/Minigames/Minigame_DigBadger.unity
     guid: fa6bc93261223cc43b5567e5ce7f5bf5
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_DodgeElephant.unity
+    path: Assets/Scenes/Minigames/Minigame_DodgeElephant.unity
     guid: 41f23f5cb24342cd9f4a133b1f82bd52
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_EscapeMazeSnake.unity
+    path: Assets/Scenes/Minigames/Minigame_EscapeMazeSnake.unity
     guid: 655cc35dbec94281aece27e548064b5f
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_FeedBoar.unity
+    path: Assets/Scenes/Minigames/Minigame_FeedBoar.unity
     guid: e90a4268c942d1a4fa65f58de35b8784
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_FollowSpider.unity
+    path: Assets/Scenes/Minigames/Minigame_FollowSpider.unity
     guid: b548c4444f510934daae80f91e8df205
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_GuessAnimalIdentity.unity
+    path: Assets/Scenes/Minigames/Minigame_GuessAnimalIdentity.unity
     guid: b6e2d505e35405e4b8f4e5efe4d89e7c
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_HerdFishDolphin.unity
+    path: Assets/Scenes/Minigames/Minigame_HerdFishDolphin.unity
     guid: 63ff88694d1df3942ac6eaa2e56a139f
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_HideAcorns.unity
+    path: Assets/Scenes/Minigames/Minigame_HideAcorns.unity
     guid: c50013cbc51235f4a8318f1d4e16c929
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_InfectBat.unity
+    path: Assets/Scenes/Minigames/Minigame_InfectBat.unity
     guid: 7de109f07dbda564785b37ec46510088
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_KeyboardMashPolarBear.unity
+    path: Assets/Scenes/Minigames/Minigame_KeyboardMashPolarBear.unity
     guid: d5337346dbc746e99f905a4a8691d5e2
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_MoveBranchGiraffe.unity
+    path: Assets/Scenes/Minigames/Minigame_MoveBranchGiraffe.unity
     guid: 7361434a0225f544591fcbb1cc2b47cc
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_PetCat.unity
+    path: Assets/Scenes/Minigames/Minigame_PetCat.unity
     guid: 4698684ede00a8a4a9f4749cefa07d87
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_RhythmElephant.unity
+    path: Assets/Scenes/Minigames/Minigame_RhythmElephant.unity
     guid: 1c547fde89a15f54280d965bd2ce3167
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_RobotProofCheck.unity
+    path: Assets/Scenes/Minigames/Minigame_RobotProofCheck.unity
     guid: 000a56526a8b4bb191f29460020046e0
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_RollMudBoar.unity
+    path: Assets/Scenes/Minigames/Minigame_RollMudBoar.unity
     guid: f000e776c203ce340bf0481dff8aaebb
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_RollSnowballArcticFox.unity
+    path: Assets/Scenes/Minigames/Minigame_RollSnowballArcticFox.unity
     guid: 5bf704e1c1a0df74c83f4bd8ea57cc8e
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_ShapeBeaver.unity
+    path: Assets/Scenes/Minigames/Minigame_ShapeBeaver.unity
     guid: ed5e1c78096bf694baf1682d0d5ab914
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_StepTargetRhino.unity
+    path: Assets/Scenes/Minigames/Minigame_StepTargetRhino.unity
     guid: dd2dc0ab59ebbff4e91fe605e49ed983
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_ThrowFruitMonkey.unity
+    path: Assets/Scenes/Minigames/Minigame_ThrowFruitMonkey.unity
     guid: 1ba05e2ecb2c8964e8b81bfa870df1d8
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_TrackScentWolf.unity
+    path: Assets/Scenes/Minigames/Minigame_TrackScentWolf.unity
     guid: 508eb7f9f80421344a679a2428603841
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_TugOfWarOtter.unity
+    path: Assets/Scenes/Minigames/Minigame_TugOfWarOtter.unity
     guid: 194d6bbd95449ba40911f1382859f0f3
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_WallRunLizard.unity
+    path: Assets/Scenes/Minigames/Minigame_WallRunLizard.unity
     guid: 7b619bb00a378d341a7cbabcc53d8879
   - enabled: 1
-    path: Assets/Minigames/Scenes/Minigame_WeaveWebSpider.unity
+    path: Assets/Scenes/Minigames/Minigame_WeaveWebSpider.unity
     guid: 282fb950bd4fae94d98a6a02cf804245
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: edc008b4817231c40ada469e413c8ff3, type: 2}
