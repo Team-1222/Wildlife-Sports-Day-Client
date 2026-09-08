@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>
@@ -93,12 +94,13 @@ public sealed class MinigameCatalogWindow : EditorWindow
         const float ActionButtonWidth = 42f;
         const float ButtonSpacing = 4f;
         float identifierWidth = Mathf.Clamp(rowRect.width * 0.28f, 130f, 240f);
-        float titleWidth = rowRect.width - (HorizontalInset * 2f) - identifierWidth - (ActionButtonWidth * 2f) - (ButtonSpacing * 2f);
+        float titleWidth = rowRect.width - (HorizontalInset * 2f) - identifierWidth - (ActionButtonWidth * 3f) - (ButtonSpacing * 3f);
 
         Rect titleRect = new(rowRect.x + HorizontalInset, rowRect.y, titleWidth, rowRect.height);
         Rect identifierRect = new(titleRect.xMax, rowRect.y, identifierWidth, rowRect.height);
         Rect selectButtonRect = new(identifierRect.xMax + ButtonSpacing, rowRect.y + 5f, ActionButtonWidth, rowRect.height - 10f);
         Rect openButtonRect = new(selectButtonRect.xMax + ButtonSpacing, rowRect.y + 5f, ActionButtonWidth, rowRect.height - 10f);
+        Rect playButtonRect = new(openButtonRect.xMax + ButtonSpacing, rowRect.y + 5f, ActionButtonWidth, rowRect.height - 10f);
 
         string tooltip = $"정의: {AssetDatabase.GetAssetPath(definition)}\n씬: {(string.IsNullOrEmpty(scenePath) ? "미지정" : scenePath)}";
         GUI.Label(titleRect, new GUIContent(definition.DisplayName, tooltip), _rowTitleStyle);
@@ -115,6 +117,11 @@ public sealed class MinigameCatalogWindow : EditorWindow
             if (GUI.Button(openButtonRect, "씬"))
             {
                 AssetDatabase.OpenAsset(definition.SceneAsset);
+            }
+
+            if (GUI.Button(playButtonRect, "실행"))
+            {
+                StartPlaytest(definition);
             }
         }
 
@@ -154,6 +161,33 @@ public sealed class MinigameCatalogWindow : EditorWindow
         }
 
         return visibleIndex % 2 == 0 ? new Color(0.94f, 0.94f, 0.95f) : new Color(0.89f, 0.9f, 0.91f);
+    }
+
+    /// <summary>
+    /// 현재 씬의 저장 여부를 확인한 뒤, 선택한 미니게임만 세션과 함께 바로 재생합니다.
+    /// </summary>
+    private static void StartPlaytest(MinigameDefinition definition)
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode || definition.SceneAsset == null)
+        {
+            return;
+        }
+
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+        {
+            return;
+        }
+
+        string scenePath = AssetDatabase.GetAssetPath(definition.SceneAsset);
+        if (string.IsNullOrWhiteSpace(scenePath))
+        {
+            Debug.LogError($"Minigame playtest scene asset path was not found: {definition.DisplayName}");
+            return;
+        }
+
+        MinigamePlaytestBootstrap.Request(definition);
+        EditorSceneManager.OpenScene(scenePath);
+        EditorApplication.isPlaying = true;
     }
 
     private static MinigameCatalog FindCatalog()
