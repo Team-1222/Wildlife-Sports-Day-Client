@@ -10,6 +10,7 @@ public sealed class MinigameCatalogWindow : EditorWindow
 {
     private const float RowHeight = 34f;
     private const float RowSpacing = 1f;
+    private const string SearchFieldControlName = "MinigameCatalogSearchField";
 
     private string _searchText = string.Empty;
     private Vector2 _scrollPosition;
@@ -42,15 +43,25 @@ public sealed class MinigameCatalogWindow : EditorWindow
 
     private void DrawFilters()
     {
-        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        _searchText = GUILayout.TextField(_searchText, EditorStyles.toolbarSearchField, GUILayout.MinWidth(220f));
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("검색", GUILayout.Width(32f));
+        GUI.SetNextControlName(SearchFieldControlName);
+        _searchText = EditorGUILayout.TextField(_searchText, GUILayout.MinWidth(220f));
+        Input.imeCompositionMode = GUI.GetNameOfFocusedControl() == SearchFieldControlName
+            ? IMECompositionMode.On
+            : IMECompositionMode.Auto;
         GUILayout.FlexibleSpace();
-        if (GUILayout.Button("새로고침", EditorStyles.toolbarButton, GUILayout.Width(60f)))
+        if (GUILayout.Button("새로고침", GUILayout.Width(60f)))
         {
             Repaint();
         }
 
         EditorGUILayout.EndHorizontal();
+    }
+
+    private void OnDisable()
+    {
+        Input.imeCompositionMode = IMECompositionMode.Auto;
     }
 
     private void DrawDefinitions(MinigameCatalog catalog)
