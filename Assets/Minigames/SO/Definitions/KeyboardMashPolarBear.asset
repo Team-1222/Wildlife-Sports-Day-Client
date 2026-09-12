@@ -25,11 +25,11 @@ MonoBehaviour:
   _developmentStatus: 2
   _isRandomSelectionEnabled: 1
   _score: 300
-  _targetCount: 20
+  _targetCount: 50
   _sceneName: Minigame_KeyboardMashPolarBear
-  _oneStarTargetCount: 10
-  _twoStarTargetCount: 15
-  _threeStarTargetCount: 20
+  _oneStarTargetCount: 25
+  _twoStarTargetCount: 38
+  _threeStarTargetCount: 50
   _oneStarScore: 100
   _twoStarScore: 200
   _threeStarScore: 300

@@ -5,7 +5,7 @@ using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 
 /// <summary>
-/// F키 연타로 북극곰과 카메라를 전진시키고, 제한 시간 안의 도달 거리로 별 등급을 계산하는 미니게임 컨트롤러입니다.
+/// F키 연타로 북극곰과 카메라를 전진시키고, 결승선 통과 시간으로 점수를 계산하는 미니게임 컨트롤러입니다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class KeyboardMashPolarBearController : MinigameControllerBase
@@ -18,13 +18,21 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
     [SerializeField] private Button _completeButton;
     [SerializeField] private Key _buttonMashKey = Key.F;
     [SerializeField] private Transform _runnerRoot;
+    [SerializeField] private Animator _runnerAnimator;
+    [SerializeField] private RuntimeAnimatorController _runnerAnimatorController;
     [SerializeField] private Transform _followCamera;
     [SerializeField] private Vector3 _cameraFollowOffset = new(0.5f, 5.85f, -15f);
     [SerializeField] private Vector3 _cameraFollowEulerAngles = new(20f, 25f, 0f);
     [SerializeField, Min(0.1f)] private float _roundDurationSeconds = 6f;
-    [SerializeField, Min(0.1f)] private float _distancePerMash = 4f;
-    [SerializeField, Min(0.1f)] private float _moveLerpSpeed = 14f;
-    [SerializeField, Min(0.1f)] private float _cameraLerpSpeed = 7f;
+    [SerializeField, Min(0.1f)] private float _threePointCompletionSeconds = 2.5f;
+    [SerializeField, Min(0.1f)] private float _twoPointCompletionSeconds = 4.5f;
+    [SerializeField, Min(0.1f)] private float _distancePerMash = 1.4f;
+    [SerializeField, Min(0.1f)] private float _runnerMoveSpeed = 16f;
+    [SerializeField, Min(0.1f)] private float _walkSpeedAtNormalAnimation = 4f;
+    [SerializeField, Min(0.1f)] private float _maximumAnimationSpeed = 4.5f;
+    [SerializeField, Min(0.1f)] private float _animationAccelerationPerSecond = 24f;
+    [SerializeField, Min(0.1f)] private float _animationDecelerationPerSecond = 5f;
+    [SerializeField, Min(0.1f)] private float _animationReturnSpeed = 0.65f;
     [SerializeField, Min(0f)] private float _cameraSwayPositionAmount = 0.06f;
     [SerializeField, Min(0f)] private float _cameraSwayRotationAmount = 0.45f;
     [SerializeField, Min(0.01f)] private float _cameraSwayDecaySpeed = 3.5f;
@@ -34,11 +42,19 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
     private Vector3 _runnerTargetPosition;
     private float _roundRemainingSeconds;
     private float _cameraSwayStrength;
+    private float _animationSpeed;
+    private bool _isRunnerAnimationAtRestPose;
+    private bool _isWaitingForAnimationLoopEnd;
+    private int _animationStopStartLoop;
 
     protected override void OnMinigameStarted()
     {
         _buttonMashCount = 0;
         _roundRemainingSeconds = _roundDurationSeconds;
+        _animationSpeed = 0f;
+        _isWaitingForAnimationLoopEnd = false;
+        SetUpRunnerAnimation();
+        ResetRunnerAnimationToFirstFrame();
         SetCompleteButtonActive(false);
         ResetRunnerAndCamera();
         RefreshTexts();
@@ -53,6 +69,12 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
         }
 
         MoveRunnerAndCamera();
+        if (HasReachedFinishLine())
+        {
+            CompleteMinigame(GetCompletionPoint(GetElapsedSeconds()));
+            return;
+        }
+
         TickRoundTimer();
         if (GameLoopSession.IsPlayingMinigame)
         {
@@ -76,12 +98,7 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
 
         _buttonMashCount++;
         AddCameraSway();
-        SetRunnerProgress(GetProgress01(definition), false);
-        if (_buttonMashCount >= definition.ThreeStarTargetCount)
-        {
-            SetRunnerProgress(1f, true);
-            CompleteMinigame(3);
-        }
+        SetRunnerProgress(GetProgress01(definition));
     }
 
     private void TickRoundTimer()
@@ -89,13 +106,6 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
         _roundRemainingSeconds = Mathf.Max(0f, _roundRemainingSeconds - Time.deltaTime);
         if (_roundRemainingSeconds > 0f)
         {
-            return;
-        }
-
-        int stars = GetDistanceStarGrade(Definition);
-        if (stars > 0)
-        {
-            CompleteMinigame(stars);
             return;
         }
 
@@ -119,12 +129,11 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
         {
             _descriptionText.text =
                 "F키를 빠르게 연타해 결승선을 향해 달리세요!\n" +
-                $"{definition.OneStarTargetCount} / {definition.TwoStarTargetCount} / {definition.ThreeStarTargetCount}회 = 1 / 2 / 3성";
+                $"{_threePointCompletionSeconds:0.0}초 / {_twoPointCompletionSeconds:0.0}초 / {_roundDurationSeconds:0.0}초 이내 완주 = 3 / 2 / 1점";
         }
 
         float distance = GetRunnerProgress01() * definition.ThreeStarTargetCount * _distancePerMash;
         float targetDistance = definition.ThreeStarTargetCount * _distancePerMash;
-        int stars = GetDistanceStarGrade(definition);
         if (_progressText != null)
         {
             _progressText.text = $"거리  {distance:0}m / {targetDistance:0}m\n연타  {_buttonMashCount}회";
@@ -137,13 +146,7 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
 
         if (_gradeText != null)
         {
-            _gradeText.text = stars switch
-            {
-                3 => "★★★  완주!",
-                2 => "★★☆  질주 중!",
-                1 => "★☆☆  조금 더!",
-                _ => "☆☆☆  출발!",
-            };
+            _gradeText.text = "결승선까지 질주!";
         }
     }
 
@@ -164,15 +167,11 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
         }
     }
 
-    private void SetRunnerProgress(float progress, bool snap)
+    private void SetRunnerProgress(float progress)
     {
         float clampedProgress = Mathf.Clamp01(progress);
         float maxDistance = Definition != null ? Definition.ThreeStarTargetCount * _distancePerMash : 0f;
         _runnerTargetPosition = _runnerStartPosition + (Vector3.right * maxDistance * clampedProgress);
-        if (snap && _runnerRoot != null)
-        {
-            _runnerRoot.position = _runnerTargetPosition;
-        }
     }
 
     private void MoveRunnerAndCamera()
@@ -182,16 +181,139 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
             return;
         }
 
-        _runnerRoot.position = Vector3.Lerp(_runnerRoot.position, _runnerTargetPosition, Time.deltaTime * _moveLerpSpeed);
+        Vector3 previousRunnerPosition = _runnerRoot.position;
+        _runnerRoot.position = Vector3.MoveTowards(
+            previousRunnerPosition,
+            _runnerTargetPosition,
+            _runnerMoveSpeed * Time.deltaTime);
+        float runnerSpeed = Vector3.Distance(_runnerRoot.position, previousRunnerPosition) / Time.deltaTime;
+        UpdateRunnerAnimation(runnerSpeed);
+
         if (_followCamera == null)
         {
             return;
         }
 
         Vector3 cameraTargetPosition = _runnerRoot.position + _cameraFollowOffset;
-        _followCamera.position = Vector3.Lerp(_followCamera.position, cameraTargetPosition, Time.deltaTime * _cameraLerpSpeed);
+        _followCamera.position = cameraTargetPosition;
         _followCamera.rotation = Quaternion.Euler(_cameraFollowEulerAngles);
         ApplyCameraSway();
+    }
+
+    private bool HasReachedFinishLine()
+    {
+        MinigameDefinition definition = Definition;
+        if (_runnerRoot == null || definition == null || _buttonMashCount < definition.ThreeStarTargetCount)
+        {
+            return false;
+        }
+
+        return Vector3.Distance(_runnerRoot.position, _runnerTargetPosition) <= 0.001f;
+    }
+
+    private void UpdateRunnerAnimation(float runnerSpeed)
+    {
+        if (runnerSpeed <= 0.001f)
+        {
+            CompleteCurrentAnimationLoop();
+            return;
+        }
+
+        _isRunnerAnimationAtRestPose = false;
+        _isWaitingForAnimationLoopEnd = false;
+        float targetAnimationSpeed = Mathf.Clamp(
+            runnerSpeed / _walkSpeedAtNormalAnimation,
+            0f,
+            _maximumAnimationSpeed);
+        float animationSpeedChangeRate = targetAnimationSpeed > _animationSpeed
+            ? _animationAccelerationPerSecond
+            : _animationDecelerationPerSecond;
+        _animationSpeed = Mathf.MoveTowards(
+            _animationSpeed,
+            targetAnimationSpeed,
+            animationSpeedChangeRate * Time.deltaTime);
+        SetRunnerAnimationSpeed();
+    }
+
+    private void CompleteCurrentAnimationLoop()
+    {
+        if (_isRunnerAnimationAtRestPose)
+        {
+            return;
+        }
+
+        if (!_isWaitingForAnimationLoopEnd)
+        {
+            _isWaitingForAnimationLoopEnd = true;
+            _animationStopStartLoop = GetAnimatorLoopCount();
+        }
+
+        _animationSpeed = Mathf.MoveTowards(
+            _animationSpeed,
+            _animationReturnSpeed,
+            _animationDecelerationPerSecond * Time.deltaTime);
+        SetRunnerAnimationSpeed();
+
+        if (GetAnimatorLoopCount() > _animationStopStartLoop)
+        {
+            _animationSpeed = 0f;
+            StopRunnerAnimationAtLoopStart();
+        }
+    }
+
+    private void SetRunnerAnimationSpeed()
+    {
+        if (_runnerAnimator != null)
+        {
+            _runnerAnimator.speed = _animationSpeed;
+        }
+    }
+
+    private void ResetRunnerAnimationToFirstFrame()
+    {
+        if (_runnerAnimator == null)
+        {
+            return;
+        }
+
+        _runnerAnimator.Rebind();
+        _runnerAnimator.Play(0, 0, 0f);
+        _runnerAnimator.Update(0f);
+        _runnerAnimator.speed = 0f;
+        _isRunnerAnimationAtRestPose = true;
+        _isWaitingForAnimationLoopEnd = false;
+    }
+
+    private void StopRunnerAnimationAtLoopStart()
+    {
+        if (_runnerAnimator == null)
+        {
+            return;
+        }
+
+        _runnerAnimator.speed = 0f;
+        _isRunnerAnimationAtRestPose = true;
+        _isWaitingForAnimationLoopEnd = false;
+    }
+
+    private int GetAnimatorLoopCount()
+    {
+        return _runnerAnimator != null
+            ? Mathf.FloorToInt(_runnerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime)
+            : 0;
+    }
+
+    private void SetUpRunnerAnimation()
+    {
+        if (_runnerAnimator == null && _runnerRoot != null)
+        {
+            _runnerAnimator = _runnerRoot.GetComponentInChildren<Animator>();
+        }
+
+        if (_runnerAnimator != null && _runnerAnimatorController != null)
+        {
+            _runnerAnimator.runtimeAnimatorController = _runnerAnimatorController;
+        }
     }
 
     private void AddCameraSway()
@@ -241,27 +363,24 @@ public sealed class KeyboardMashPolarBearController : MinigameControllerBase
         return Mathf.Clamp01(Vector3.Dot(_runnerRoot.position - _runnerStartPosition, Vector3.right) / maxDistance);
     }
 
-    private int GetDistanceStarGrade(MinigameDefinition definition)
+    private float GetElapsedSeconds()
     {
-        if (definition == null || definition.ThreeStarTargetCount <= 0)
-        {
-            return 0;
-        }
+        return _roundDurationSeconds - _roundRemainingSeconds;
+    }
 
-        float progress = GetRunnerProgress01();
-        float oneStarProgress = definition.OneStarTargetCount / (float)definition.ThreeStarTargetCount;
-        float twoStarProgress = definition.TwoStarTargetCount / (float)definition.ThreeStarTargetCount;
-        if (progress >= 1f)
+    private int GetCompletionPoint(float elapsedSeconds)
+    {
+        if (elapsedSeconds <= _threePointCompletionSeconds)
         {
             return 3;
         }
 
-        if (progress >= twoStarProgress)
+        if (elapsedSeconds <= _twoPointCompletionSeconds)
         {
             return 2;
         }
 
-        return progress >= oneStarProgress ? 1 : 0;
+        return 1;
     }
 
     private void SetCompleteButtonActive(bool active)
